@@ -7,15 +7,89 @@ import UserProfile from '../components/UserProfile'
 import RahiChat from '../components/RahiChat'
 import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip,
-    BarChart, Bar, XAxis, YAxis
 } from 'recharts'
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     Map as MapIcon, Calendar, PieChart as PieChartIcon, MessageSquare,
-    Download, Heart, NavArrowRight, MapPin, ExternalLink, Moon, Sun, CloudRain
+    Download, Heart, MapPin, ExternalLink, ArrowLeft, Sparkles,
+    CloudSun, Wind, Droplets, ShieldCheck, Star, Clock, Wallet
 } from 'lucide-react'
+
+// ── COLOUR TOKENS (light, always) ──────────────────────────────────────────
+const C = {
+    bg: '#F7F8FA',
+    surface: '#FFFFFF',
+    border: '#ECEEF2',
+    text: '#0F172A',
+    muted: '#64748B',
+    amber: '#F5C518',
+    amberLight: '#FFFBEB',
+    amberBorder: '#FDE68A',
+    teal: '#0D9488',
+    blue: '#3B82F6',
+    red: '#EF4444',
+    purple: '#8B5CF6',
+    green: '#10B981',
+}
+
+const TAG = ({ children, color = C.amber, bg = C.amberLight, border = C.amberBorder }) => (
+    <span style={{
+        display: 'inline-flex', alignItems: 'center',
+        padding: '3px 10px', borderRadius: '100px',
+        fontSize: '11px', fontWeight: 700, letterSpacing: '0.3px',
+        background: bg, color, border: `1px solid ${border}`,
+    }}>{children}</span>
+)
+
+const ScoreBar = ({ label, score, color }) => (
+    <div style={{ marginBottom: '14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: C.text }}>{label}</span>
+            <span style={{ fontSize: '13px', fontWeight: 700, color }}>{score}/100</span>
+        </div>
+        <div style={{ height: '8px', background: '#F1F5F9', borderRadius: '100px', overflow: 'hidden' }}>
+            <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${score}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+                style={{ height: '100%', background: color, borderRadius: '100px' }}
+            />
+        </div>
+    </div>
+)
+
+const SideCard = ({ title, icon, children }) => (
+    <div style={{
+        background: C.surface, borderRadius: '16px', padding: '20px',
+        border: `1px solid ${C.border}`, marginBottom: '16px',
+        boxShadow: '0 1px 8px rgba(0,0,0,0.05)',
+    }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <span style={{ color: C.amber }}>{icon}</span>
+            <h3 style={{ fontSize: '14px', fontWeight: 700, color: C.text, fontFamily: 'Syne, sans-serif' }}>{title}</h3>
+        </div>
+        {children}
+    </div>
+)
+
+const TabBtn = ({ id, label, icon, active, onClick }) => (
+    <button onClick={() => onClick(id)} style={{
+        display: 'flex', alignItems: 'center', gap: '7px',
+        padding: '8px 18px', borderRadius: '100px',
+        fontSize: '13px', fontWeight: 700,
+        border: 'none', cursor: 'pointer',
+        background: active ? C.text : 'transparent',
+        color: active ? C.amber : C.muted,
+        transition: 'all 0.2s ease',
+        fontFamily: 'Syne, sans-serif',
+    }}
+        onMouseEnter={e => { if (!active) e.currentTarget.style.background = C.border }}
+        onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}>
+        {icon} <span className="hidden sm:inline">{label}</span>
+    </button>
+)
 
 const Dashboard = () => {
     const location = useLocation()
@@ -40,10 +114,14 @@ const Dashboard = () => {
 
     if (!tripData) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-black/5 dark:bg-black/40">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 rounded-full border-4 border-[var(--primary)] border-t-transparent animate-spin"></div>
-                    <p className="text-[var(--text-secondary)] font-medium">Loading your perfect trip...</p>
+            <div style={{ minHeight: '100vh', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                        width: '48px', height: '48px', borderRadius: '50%',
+                        border: `4px solid ${C.amberBorder}`, borderTopColor: C.amber,
+                        animation: 'spin 0.9s linear infinite', margin: '0 auto 16px',
+                    }} />
+                    <p style={{ color: C.muted, fontWeight: 600 }}>Building your perfect trip...</p>
                 </div>
             </div>
         )
@@ -70,7 +148,6 @@ const Dashboard = () => {
             setSaved(true)
         } catch (error) {
             console.error('Error saving trip:', error)
-            alert('Failed to save trip. Please try again.')
         } finally {
             setIsSaving(false)
         }
@@ -79,325 +156,538 @@ const Dashboard = () => {
     const handleExportPDF = async () => {
         if (!exportRef.current) return
         setIsExporting(true)
-
         try {
-            // A simple temporary style injection for reliable rendering
-            const canvas = await html2canvas(exportRef.current, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#ffffff'
-            })
+            const canvas = await html2canvas(exportRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
             const imgData = canvas.toDataURL('image/png')
             const pdf = new jsPDF('p', 'mm', 'a4')
             const pdfWidth = pdf.internal.pageSize.getWidth()
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width
-
             pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
             pdf.save(`TRAVLO_${destination.replace(/\s+/g, '_')}_Itinerary.pdf`)
         } catch (error) {
             console.error('PDF Export error:', error)
-            alert('Failed to export PDF.')
         } finally {
             setIsExporting(false)
         }
     }
 
-    const openMaps = (locationName) => {
-        const query = encodeURIComponent(locationName)
-        window.open(`https://www.openstreetmap.org/search?query=${query}`, '_blank')
+    const openMaps = (loc) => {
+        window.open(`https://www.openstreetmap.org/search?query=${encodeURIComponent(loc)}`, '_blank')
     }
 
     const budgetData = [
-        { name: 'Accommodation', value: budget.accommodation, color: '#4A90E2' },
-        { name: 'Food', value: budget.food, color: '#50C9CE' },
-        { name: 'Transport', value: budget.transport, color: '#FF6B6B' },
-        { name: 'Attractions', value: budget.attractions, color: '#FFD93D' },
-        { name: 'Misc', value: budget.miscellaneous, color: '#8884d8' }
+        { name: 'Stay', value: budget.accommodation, color: C.blue },
+        { name: 'Food', value: budget.food, color: C.teal },
+        { name: 'Transport', value: budget.transport, color: C.red },
+        { name: 'Activities', value: budget.attractions, color: C.amber },
+        { name: 'Misc', value: budget.miscellaneous, color: C.purple },
     ]
 
-    const scoreData = [
-        { name: 'Travel', score: travelScore, color: '#4A90E2' },
-        { name: 'Safety', score: safetyScore, color: '#50C9CE' }
-    ]
+    const weatherIcon = weather.condition?.toLowerCase().includes('rain') ? '🌧️'
+        : weather.condition?.toLowerCase().includes('cloud') ? '⛅' : '☀️'
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-sans selection:bg-[var(--primary)] selection:text-white">
+        <div style={{ minHeight: '100vh', background: C.bg, fontFamily: 'Inter, sans-serif' }}>
 
-            {/* Header */}
-            <header className="sticky top-0 z-50 glass-header border-b border-[var(--border-color)]">
-                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white font-bold">T</div>
-                        <span className="font-outfit font-bold tracking-tight text-xl">TRAVLO <span className="text-[var(--primary)] text-sm">AI</span></span>
+            {/* ── TOP NAV ──────────────────────────────────────────────────── */}
+            <header style={{
+                position: 'sticky', top: 0, zIndex: 50,
+                background: 'rgba(255,255,255,0.95)',
+                backdropFilter: 'blur(16px)',
+                borderBottom: `1px solid ${C.border}`,
+                padding: '0 24px', height: '60px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                boxShadow: '0 1px 12px rgba(0,0,0,0.06)',
+            }}>
+                {/* Logo + Back */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button onClick={() => navigate('/')}
+                        style={{
+                            width: '34px', height: '34px', borderRadius: '10px',
+                            background: C.bg, border: `1px solid ${C.border}`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', color: C.muted, transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = C.text; e.currentTarget.style.color = C.amber }}
+                        onMouseLeave={e => { e.currentTarget.style.background = C.bg; e.currentTarget.style.color = C.muted }}>
+                        <ArrowLeft size={16} />
+                    </button>
+                    <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '18px', color: C.text }}>
+                        TRAVLO <span style={{ fontSize: '9px', fontWeight: 700, background: C.text, color: C.amber, padding: '2px 6px', borderRadius: '100px' }}>AI</span>
                     </div>
+                </div>
 
-                    <div className="flex flex-1 justify-center gap-2">
-                        {['itinerary', 'map', 'budget', 'assistant'].map(tab => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2
-                                    ${activeTab === tab ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white shadow-md'
-                                        : 'hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-secondary)]'}`}
-                            >
-                                {tab === 'itinerary' && <Calendar size={16} />}
-                                {tab === 'map' && <MapIcon size={16} />}
-                                {tab === 'budget' && <PieChartIcon size={16} />}
-                                {tab === 'assistant' && <MessageSquare size={16} />}
-                                <span className="hidden sm:inline capitalize">{tab}</span>
-                            </button>
-                        ))}
-                    </div>
+                {/* Tabs */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: C.bg, borderRadius: '100px', padding: '4px', border: `1px solid ${C.border}` }}>
+                    <TabBtn id="itinerary" label="Itinerary" icon={<Calendar size={14} />} active={activeTab === 'itinerary'} onClick={setActiveTab} />
+                    <TabBtn id="map" label="Map" icon={<MapIcon size={14} />} active={activeTab === 'map'} onClick={setActiveTab} />
+                    <TabBtn id="budget" label="Budget" icon={<PieChartIcon size={14} />} active={activeTab === 'budget'} onClick={setActiveTab} />
+                    <TabBtn id="assistant" label="AI Chat" icon={<MessageSquare size={14} />} active={activeTab === 'assistant'} onClick={setActiveTab} />
+                </div>
 
-                    <div className="flex items-center gap-3">
-                        {!saved && (
-                            <button onClick={handleSaveTrip} disabled={isSaving}
-                                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-all text-sm font-medium">
-                                <Heart size={16} />
-                                {isSaving ? 'Saving...' : 'Save'}
-                            </button>
-                        )}
-                        <UserProfile />
-                    </div>
+                {/* Actions */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {!saved && (
+                        <button onClick={handleSaveTrip} disabled={isSaving}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                padding: '8px 16px', borderRadius: '100px',
+                                background: 'transparent',
+                                border: `2px solid ${C.border}`,
+                                fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                                color: C.text, transition: 'all 0.2s',
+                                fontFamily: 'Syne, sans-serif',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = C.text }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border }}>
+                            <Heart size={14} /> {isSaving ? 'Saving…' : saved ? 'Saved ✓' : 'Save'}
+                        </button>
+                    )}
+                    <button onClick={handleExportPDF} disabled={isExporting}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            padding: '8px 18px', borderRadius: '100px',
+                            background: C.text, color: C.amber,
+                            border: 'none', fontSize: '13px', fontWeight: 700,
+                            cursor: 'pointer', transition: 'all 0.2s',
+                            fontFamily: 'Syne, sans-serif',
+                            boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                        }}>
+                        <Download size={14} /> {isExporting ? 'Exporting…' : 'Export PDF'}
+                    </button>
+                    <UserProfile />
                 </div>
             </header>
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+            <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '28px 24px 60px' }}>
 
-                {/* Hero Summary */}
-                <div className="mb-8 rounded-3xl p-6 sm:p-10 relative overflow-hidden glass-card shadow-soft"
-                    style={{ background: 'linear-gradient(135deg, rgba(74,144,226,0.05), rgba(80,201,206,0.05))' }}>
-                    <div className="absolute top-0 right-0 p-8 opacity-20 pointer-events-none">
-                        <MapIcon size={120} />
-                    </div>
-                    <div className="relative z-10 flex flex-col md:flex-row gap-6 justify-between items-start md:items-end">
-                        <div>
-                            <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-[var(--primary)] text-white mb-4">
-                                {trip.travelerType || 'Awesome'} Trip
+                {/* ── HERO BANNER ────────────────────────────────────────────── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    style={{
+                        background: C.text,
+                        borderRadius: '24px',
+                        padding: '32px 36px',
+                        marginBottom: '24px',
+                        position: 'relative', overflow: 'hidden',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        flexWrap: 'wrap', gap: '20px',
+                    }}>
+                    {/* BG decoration */}
+                    <div style={{
+                        position: 'absolute', right: '-20px', top: '-20px',
+                        width: '200px', height: '200px', borderRadius: '50%',
+                        background: 'rgba(245,197,24,0.08)', pointerEvents: 'none',
+                    }} />
+                    <div style={{
+                        position: 'absolute', right: '60px', bottom: '-40px',
+                        width: '150px', height: '150px', borderRadius: '50%',
+                        background: 'rgba(245,197,24,0.05)', pointerEvents: 'none',
+                    }} />
+
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                        <TAG>{(trip.travelerType || 'SOLO').toUpperCase()} TRIP</TAG>
+                        <h1 style={{
+                            fontFamily: 'Syne, sans-serif', fontWeight: 800,
+                            fontSize: 'clamp(28px, 4vw, 44px)',
+                            color: '#FFFFFF', letterSpacing: '-1px',
+                            margin: '10px 0 8px', lineHeight: 1.1,
+                        }}>
+                            Journey to <span style={{ color: C.amber }}>{destination}</span>
+                        </h1>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
+                                <Calendar size={14} /> {trip.days} Days
                             </span>
-                            <h1 className="text-4xl sm:text-5xl font-bold font-outfit tracking-tight mb-2">
-                                Journey to <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]">{destination}</span>
-                            </h1>
-                            <p className="text-[var(--text-secondary)] flex items-center gap-3">
-                                <Calendar size={16} /> {trip.days} Days
-                                <span className="opacity-40">|</span>
-                                <PieChartIcon size={16} /> Total Budget: ₹{(budget.total || 0).toLocaleString()}
-                            </p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button onClick={handleExportPDF} disabled={isExporting} className="btn-primary rounded-full px-6 py-2.5 text-sm font-medium flex gap-2 items-center">
-                                <Download size={16} /> {isExporting ? 'Exporting...' : 'Export PDF'}
-                            </button>
+                            <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
+                                <Wallet size={14} /> Total Budget: ₹{(budget.total || 0).toLocaleString()}
+                            </span>
                         </div>
                     </div>
-                </div>
 
-                {/* Tab Content */}
-                <div className="mt-8 relative min-h-[500px]">
-                    <AnimatePresence mode="wait">
+                    {/* Quick weather pill */}
+                    <div style={{
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '16px', padding: '16px 24px',
+                        display: 'flex', alignItems: 'center', gap: '16px',
+                        position: 'relative', zIndex: 1,
+                    }}>
+                        <span style={{ fontSize: '36px' }}>{weatherIcon}</span>
+                        <div>
+                            <div style={{ fontSize: '22px', fontWeight: 800, color: '#fff', fontFamily: 'Syne, sans-serif' }}>
+                                {weather.temperature || '28°C'}
+                            </div>
+                            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
+                                {weather.condition || 'Clear'}
+                            </div>
+                        </div>
+                        {weather.humidity && (
+                            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '16px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                                    <Droplets size={11} /> {weather.humidity}
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Wind size={11} /> {weather.windSpeed}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
 
-                        {activeTab === 'itinerary' && (
-                            <motion.div key="itinerary"
-                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}
-                                className="grid lg:grid-cols-[1fr,320px] gap-8">
+                {/* ── TAB CONTENT ────────────────────────────────────────────── */}
+                <AnimatePresence mode="wait">
 
-                                {/* Printable Area */}
-                                <div ref={exportRef} className="space-y-6 bg-[var(--bg-primary)] rounded-xl p-1">
-                                    {itinerary.length > 0 ? itinerary.map((day, ix) => (
-                                        <div key={day.day || ix} className="glass-card rounded-2xl p-6 shadow-soft relative overflow-hidden group">
-                                            <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-[var(--primary)] to-[var(--secondary)] opacity-80" />
+                    {/* ── ITINERARY TAB ──────────────────────────────────────── */}
+                    {activeTab === 'itinerary' && (
+                        <motion.div key="itinerary"
+                            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}
+                            style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '20px', alignItems: 'start' }}>
 
-                                            <div className="flex justify-between items-start mb-6 border-b border-[var(--border-color)] pb-4">
-                                                <div>
-                                                    <h3 className="text-xl font-bold font-outfit text-transparent bg-clip-text bg-gradient-to-r from-[var(--primary)] to-[#FF6B6B]">
-                                                        Day {day.day} - {day.date}
-                                                    </h3>
-                                                    <p className="text-[var(--text-secondary)] font-medium mt-1">{day.theme}</p>
+                            {/* Left: Day cards */}
+                            <div ref={exportRef} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                {itinerary.length > 0 ? itinerary.map((day, ix) => (
+                                    <motion.div
+                                        key={day.day || ix}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: ix * 0.07 }}
+                                        style={{
+                                            background: C.surface, borderRadius: '20px',
+                                            border: `1px solid ${C.border}`,
+                                            overflow: 'hidden',
+                                            boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                                        }}>
+                                        {/* Day header */}
+                                        <div style={{
+                                            padding: '20px 24px 16px',
+                                            borderBottom: `1px solid ${C.border}`,
+                                            display: 'flex', alignItems: 'center',
+                                            justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px',
+                                            background: `linear-gradient(to right, ${C.amberLight}, ${C.surface})`,
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                                <div style={{
+                                                    width: '44px', height: '44px', borderRadius: '12px',
+                                                    background: C.amber,
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '16px',
+                                                    color: C.text, flexShrink: 0,
+                                                }}>
+                                                    {day.day}
                                                 </div>
-                                                <div className="text-right text-xs space-y-1">
-                                                    <span className="block px-2 py-1 rounded-md bg-[rgba(80,201,206,0.1)] text-[var(--secondary)]">Budget: ₹{day.dayBudget}</span>
-                                                    {day.weather && <span className="block px-2 py-1 rounded-md bg-[rgba(74,144,226,0.1)] text-[var(--primary)]">{day.weather.temp}</span>}
+                                                <div>
+                                                    <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '16px', color: C.text, margin: 0 }}>
+                                                        {day.date}
+                                                    </h3>
+                                                    <p style={{ fontSize: '12px', color: C.muted, fontWeight: 600, margin: '2px 0 0' }}>
+                                                        {day.theme}
+                                                    </p>
                                                 </div>
                                             </div>
+                                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                {day.dayBudget && (
+                                                    <span style={{
+                                                        padding: '4px 12px', borderRadius: '100px',
+                                                        background: '#F0FDF4', color: '#16A34A',
+                                                        border: '1px solid #BBF7D0',
+                                                        fontSize: '12px', fontWeight: 700,
+                                                    }}>
+                                                        ₹{Number(day.dayBudget).toLocaleString()}
+                                                    </span>
+                                                )}
+                                                {day.weather?.temp && (
+                                                    <span style={{
+                                                        padding: '4px 12px', borderRadius: '100px',
+                                                        background: '#EFF6FF', color: C.blue,
+                                                        border: `1px solid #BFDBFE`,
+                                                        fontSize: '12px', fontWeight: 700,
+                                                    }}>
+                                                        {weatherIcon} {day.weather.temp}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
 
-                                            <div className="space-y-5 relative">
-                                                {/* Timeline line */}
-                                                <div className="absolute left-[31px] top-2 bottom-4 w-px bg-gradient-to-b from-[var(--border-color)] to-transparent hidden sm:block"></div>
+                                        {/* Activities */}
+                                        <div style={{ padding: '8px 0' }}>
+                                            {day.activities?.map((activity, actIx) => (
+                                                <div key={actIx} style={{
+                                                    padding: '16px 24px',
+                                                    borderBottom: actIx < day.activities.length - 1 ? `1px solid ${C.border}` : 'none',
+                                                    display: 'flex', gap: '16px',
+                                                    transition: 'background 0.15s',
+                                                }}
+                                                    onMouseEnter={e => e.currentTarget.style.background = '#FAFBFC'}
+                                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
 
-                                                {day.activities?.map((activity, actIx) => (
-                                                    <div key={actIx} className="flex gap-4 sm:gap-6 relative group/act">
-                                                        <div className="hidden sm:flex flex-col items-center pt-1 z-10 bg-[var(--card-surface)]">
-                                                            <div className="w-16 text-right text-xs font-semibold text-[var(--primary)] pt-0.5">{activity.time}</div>
-                                                            <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary)] ring-4 ring-[var(--card-surface)] my-2"></div>
-                                                        </div>
+                                                    {/* Time column */}
+                                                    <div style={{ flexShrink: 0, width: '56px', paddingTop: '2px' }}>
+                                                        <div style={{ fontSize: '11px', fontWeight: 700, color: C.amber }}>{activity.time}</div>
+                                                        <div style={{ width: '1px', height: '100%', background: C.amberBorder, margin: '6px auto 0', opacity: 0.5 }} />
+                                                    </div>
 
-                                                        <div className="flex-1 bg-black/5 dark:bg-white/5 rounded-xl p-4 transition-colors hover:bg-black/10 dark:hover:bg-white/10">
-                                                            <div className="sm:hidden text-xs font-semibold text-[var(--primary)] mb-1">{activity.time}</div>
-                                                            <div className="flex justify-between items-start gap-4">
-                                                                <h4 className="font-bold text-[var(--text-primary)]">{activity.title}</h4>
-                                                                {activity.rating && <span className="text-xs font-bold text-amber-500 shrink-0 flex items-center gap-1">★ {activity.rating}</span>}
-                                                            </div>
-                                                            <p className="text-sm text-[var(--text-secondary)] mt-1.5">{activity.description}</p>
-
-                                                            <div className="flex flex-wrap gap-2 mt-4 text-xs font-medium">
-                                                                <button onClick={() => openMaps(activity.location)}
-                                                                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--card-surface)] text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors border border-[var(--border-color)]">
-                                                                    <MapPin size={12} /> {activity.location} <ExternalLink size={10} className="ml-1 opacity-50" />
-                                                                </button>
-                                                                {activity.cost && (
-                                                                    <span className="flex items-center px-2.5 py-1 rounded-lg bg-[var(--card-surface)] text-[var(--text-secondary)] border border-[var(--border-color)]">
-                                                                        ₹{activity.cost}
-                                                                    </span>
-                                                                )}
-                                                                {activity.duration && (
-                                                                    <span className="flex items-center px-2.5 py-1 rounded-lg bg-[var(--card-surface)] text-[var(--text-secondary)] border border-[var(--border-color)]">
-                                                                        {activity.duration}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-
-                                                            {activity.tips && (
-                                                                <div className="mt-3 p-2.5 rounded-lg bg-[rgba(255,217,61,0.1)] border border-[rgba(255,217,61,0.2)] text-xs text-amber-600 dark:text-amber-400">
-                                                                    <strong className="mr-1">Tip:</strong>{activity.tips}
-                                                                </div>
+                                                    {/* Content */}
+                                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' }}>
+                                                            <h4 style={{ fontSize: '15px', fontWeight: 700, color: C.text, margin: 0 }}>
+                                                                {activity.title}
+                                                            </h4>
+                                                            {activity.rating && (
+                                                                <span style={{
+                                                                    display: 'flex', alignItems: 'center', gap: '3px',
+                                                                    fontSize: '12px', fontWeight: 700, color: '#92400E',
+                                                                    background: C.amberLight, padding: '2px 8px',
+                                                                    borderRadius: '100px', flexShrink: 0,
+                                                                    border: `1px solid ${C.amberBorder}`,
+                                                                }}>
+                                                                    <Star size={10} fill={C.amber} color={C.amber} /> {activity.rating}
+                                                                </span>
                                                             )}
                                                         </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-
-                                            {/* Daily Tips Footer */}
-                                            <div className="mt-6 pt-4 border-t border-[var(--border-color)] grid sm:grid-cols-2 gap-4 text-xs">
-                                                {day.packingTip && (
-                                                    <div className="flex items-start gap-2 text-[var(--text-secondary)]">
-                                                        <span className="text-[var(--primary)] shrink-0">🧳</span>
-                                                        <p>{day.packingTip}</p>
-                                                    </div>
-                                                )}
-                                                {day.safetyTip && (
-                                                    <div className="flex items-start gap-2 text-[var(--text-secondary)]">
-                                                        <span className="text-[var(--accent-sunset)] shrink-0">🛡️</span>
-                                                        <p>{day.safetyTip}</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )) : (
-                                        <div className="p-10 text-center text-[var(--text-secondary)] glass-card rounded-2xl">
-                                            No itinerary data available.
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Sidebar Stats */}
-                                <div className="space-y-6">
-                                    <div className="glass-card rounded-2xl p-5 shadow-soft">
-                                        <h3 className="font-bold font-outfit mb-4">Quick Weather</h3>
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-4xl">{weather.condition?.toLowerCase().includes('rain') ? '🌧️' : '☀️'}</div>
-                                            <div>
-                                                <div className="text-2xl font-bold">{weather.temperature || 'N/A'}</div>
-                                                <div className="text-sm text-[var(--text-secondary)]">{weather.condition || 'Clear'}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="glass-card rounded-2xl p-5 shadow-soft">
-                                        <h3 className="font-bold font-outfit mb-4">Trip Scores</h3>
-                                        <div className="space-y-4">
-                                            {scoreData.map(s => (
-                                                <div key={s.name}>
-                                                    <div className="flex justify-between text-sm mb-1">
-                                                        <span>{s.name}</span>
-                                                        <span className="font-bold" style={{ color: s.color }}>{s.score}/100</span>
-                                                    </div>
-                                                    <div className="h-2 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
-                                                        <div className="h-full rounded-full" style={{ width: `${s.score}%`, background: s.color }} />
+                                                        <p style={{ fontSize: '13px', color: C.muted, lineHeight: 1.65, margin: '0 0 10px' }}>
+                                                            {activity.description}
+                                                        </p>
+                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                                            <button onClick={() => openMaps(activity.location)}
+                                                                style={{
+                                                                    display: 'flex', alignItems: 'center', gap: '5px',
+                                                                    padding: '4px 10px', borderRadius: '8px',
+                                                                    background: '#F8FAFC', border: `1px solid ${C.border}`,
+                                                                    fontSize: '12px', fontWeight: 600, color: C.muted,
+                                                                    cursor: 'pointer', transition: 'all 0.15s',
+                                                                }}
+                                                                onMouseEnter={e => { e.currentTarget.style.color = C.blue; e.currentTarget.style.borderColor = C.blue }}
+                                                                onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border }}>
+                                                                <MapPin size={11} /> {activity.location} <ExternalLink size={9} />
+                                                            </button>
+                                                            {activity.cost && (
+                                                                <span style={{
+                                                                    padding: '4px 10px', borderRadius: '8px',
+                                                                    background: '#F0FDF4', border: '1px solid #BBF7D0',
+                                                                    fontSize: '12px', fontWeight: 700, color: '#16A34A',
+                                                                }}>
+                                                                    ₹{activity.cost}
+                                                                </span>
+                                                            )}
+                                                            {activity.duration && (
+                                                                <span style={{
+                                                                    display: 'flex', alignItems: 'center', gap: '4px',
+                                                                    padding: '4px 10px', borderRadius: '8px',
+                                                                    background: '#F8FAFC', border: `1px solid ${C.border}`,
+                                                                    fontSize: '12px', fontWeight: 600, color: C.muted,
+                                                                }}>
+                                                                    <Clock size={10} /> {activity.duration}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {activity.tips && (
+                                                            <div style={{
+                                                                marginTop: '10px', padding: '8px 12px',
+                                                                borderRadius: '10px', background: C.amberLight,
+                                                                border: `1px solid ${C.amberBorder}`,
+                                                                fontSize: '12px', color: '#92400E', lineHeight: 1.55,
+                                                            }}>
+                                                                💡 <strong>Tip: </strong>{activity.tips}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
-                                    </div>
 
-                                    {trip.safetyTips?.length > 0 && (
-                                        <div className="glass-card rounded-2xl p-5 shadow-soft bg-amber-500/5 border-amber-500/20">
-                                            <h3 className="font-bold font-outfit mb-3 text-amber-600 dark:text-amber-400">Essential Tips</h3>
-                                            <ul className="text-sm space-y-2 text-[var(--text-secondary)]">
-                                                {trip.safetyTips.slice(0, 3).map((tip, i) => (
-                                                    <li key={i} className="flex gap-2">
-                                                        <span className="text-amber-500">•</span> {tip}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {activeTab === 'map' && (
-                            <motion.div key="map"
-                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}
-                                className="h-[600px] w-full rounded-2xl overflow-hidden glass-card shadow-soft p-1">
-                                <MapComponent destination={destination} itinerary={itinerary} />
-                            </motion.div>
-                        )}
-
-                        {activeTab === 'budget' && (
-                            <motion.div key="budget"
-                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}
-                                className="grid md:grid-cols-2 gap-8">
-                                <div className="glass-card rounded-2xl p-8 shadow-soft">
-                                    <h3 className="font-bold font-outfit text-xl mb-6">Budget Overview</h3>
-                                    <div className="h-64 mb-6">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <PieChart>
-                                                <Pie data={budgetData} innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value">
-                                                    {budgetData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
-                                                </Pie>
-                                                <RechartsTooltip formatter={(value) => `₹${value}`} />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                    <div className="space-y-4">
-                                        {budgetData.map(item => (
-                                            <div key={item.name} className="flex justify-between items-center text-sm">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-3 h-3 rounded-full" style={{ background: item.color }} />
-                                                    <span className="text-[var(--text-secondary)]">{item.name}</span>
-                                                </div>
-                                                <span className="font-bold">₹{(item.value || 0).toLocaleString()}</span>
+                                        {/* Day footer tips */}
+                                        {(day.packingTip || day.safetyTip) && (
+                                            <div style={{
+                                                padding: '12px 24px',
+                                                borderTop: `1px solid ${C.border}`,
+                                                background: '#FAFBFC',
+                                                display: 'flex', gap: '16px', flexWrap: 'wrap',
+                                            }}>
+                                                {day.packingTip && (
+                                                    <div style={{ display: 'flex', gap: '6px', fontSize: '12px', color: C.muted, flex: 1, minWidth: '200px' }}>
+                                                        <span>🧳</span> <span>{day.packingTip}</span>
+                                                    </div>
+                                                )}
+                                                {day.safetyTip && (
+                                                    <div style={{ display: 'flex', gap: '6px', fontSize: '12px', color: C.muted, flex: 1, minWidth: '200px' }}>
+                                                        <span>🛡️</span> <span>{day.safetyTip}</span>
+                                                    </div>
+                                                )}
                                             </div>
-                                        ))}
+                                        )}
+                                    </motion.div>
+                                )) : (
+                                    <div style={{
+                                        textAlign: 'center', padding: '60px 24px',
+                                        background: C.surface, borderRadius: '20px',
+                                        border: `1px solid ${C.border}`, color: C.muted,
+                                    }}>
+                                        <Sparkles size={36} style={{ margin: '0 auto 12px', color: C.amber }} />
+                                        <p>No itinerary data available.</p>
                                     </div>
-                                </div>
+                                )}
+                            </div>
 
-                                <div className="space-y-4">
-                                    {itinerary.map(day => (
-                                        <div key={day.day} className="glass-card rounded-xl p-5 shadow-soft flex items-center justify-between">
-                                            <div>
-                                                <div className="font-semibold text-sm">Day {day.day}</div>
-                                                <div className="text-xs text-[var(--text-secondary)]">{day.date}</div>
+                            {/* Right sidebar */}
+                            <div style={{ position: 'sticky', top: '76px' }}>
+                                <SideCard title="Trip Scores" icon={<ShieldCheck size={16} />}>
+                                    <ScoreBar label="Travel Score" score={travelScore} color={C.blue} />
+                                    <ScoreBar label="Safety Score" score={safetyScore} color={C.teal} />
+                                </SideCard>
+
+                                <SideCard title="Budget Summary" icon={<Wallet size={16} />}>
+                                    {budgetData.map(b => (
+                                        <div key={b.name} style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                            marginBottom: '10px', fontSize: '13px',
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: b.color, flexShrink: 0 }} />
+                                                <span style={{ color: C.muted, fontWeight: 600 }}>{b.name}</span>
                                             </div>
-                                            <div className="font-bold font-outfit text-[var(--primary)]">
-                                                ₹{(day.dayBudget || 0).toLocaleString()}
-                                            </div>
+                                            <span style={{ fontWeight: 700, color: C.text }}>₹{(b.value || 0).toLocaleString()}</span>
                                         </div>
                                     ))}
+                                    <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '10px', marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ fontWeight: 700, color: C.text, fontSize: '14px' }}>Total</span>
+                                        <span style={{ fontWeight: 800, color: C.amber, fontSize: '15px', fontFamily: 'Syne, sans-serif' }}>
+                                            ₹{(budget.total || 0).toLocaleString()}
+                                        </span>
+                                    </div>
+                                </SideCard>
+
+                                {trip.safetyTips?.length > 0 && (
+                                    <SideCard title="Safety Tips" icon={<ShieldCheck size={16} />}>
+                                        {trip.safetyTips.slice(0, 4).map((tip, i) => (
+                                            <div key={i} style={{
+                                                display: 'flex', gap: '8px', marginBottom: '8px',
+                                                fontSize: '12px', color: C.muted, lineHeight: 1.5,
+                                            }}>
+                                                <span style={{ color: C.amber, flexShrink: 0, fontWeight: 800 }}>•</span>
+                                                <span>{tip}</span>
+                                            </div>
+                                        ))}
+                                    </SideCard>
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* ── MAP TAB ────────────────────────────────────────────── */}
+                    {activeTab === 'map' && (
+                        <motion.div key="map"
+                            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
+                            style={{
+                                height: '600px', borderRadius: '20px', overflow: 'hidden',
+                                border: `1px solid ${C.border}`, boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+                            }}>
+                            <MapComponent destination={destination} itinerary={itinerary} />
+                        </motion.div>
+                    )}
+
+                    {/* ── BUDGET TAB ─────────────────────────────────────────── */}
+                    {activeTab === 'budget' && (
+                        <motion.div key="budget"
+                            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
+                            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div style={{
+                                background: C.surface, borderRadius: '20px',
+                                padding: '28px', border: `1px solid ${C.border}`,
+                                boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                            }}>
+                                <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '18px', color: C.text, marginBottom: '24px' }}>
+                                    Budget Breakdown
+                                </h3>
+                                <div style={{ height: '220px', marginBottom: '24px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie data={budgetData} innerRadius={65} outerRadius={95} paddingAngle={4} dataKey="value">
+                                                {budgetData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
+                                            </Pie>
+                                            <RechartsTooltip formatter={(value) => `₹${Number(value).toLocaleString()}`} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
                                 </div>
-                            </motion.div>
-                        )}
+                                {budgetData.map(item => (
+                                    <div key={item.name} style={{
+                                        display: 'flex', justifyContent: 'space-between',
+                                        alignItems: 'center', marginBottom: '12px',
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: item.color }} />
+                                            <span style={{ fontSize: '14px', color: C.muted, fontWeight: 600 }}>{item.name}</span>
+                                        </div>
+                                        <span style={{ fontSize: '14px', fontWeight: 700, color: C.text }}>₹{(item.value || 0).toLocaleString()}</span>
+                                    </div>
+                                ))}
+                                <div style={{ borderTop: `2px solid ${C.border}`, paddingTop: '14px', marginTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 700, color: C.text }}>Total Budget</span>
+                                    <span style={{ fontWeight: 800, fontSize: '18px', color: C.amber, fontFamily: 'Syne, sans-serif' }}>
+                                        ₹{(budget.total || 0).toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
 
-                        {activeTab === 'assistant' && (
-                            <motion.div key="assistant"
-                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}
-                                className="h-[600px] w-full max-w-3xl mx-auto rounded-2xl overflow-hidden glass-card shadow-soft">
-                                <RahiChat tripContext={trip} />
-                            </motion.div>
-                        )}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '18px', color: C.text, margin: '0 0 4px' }}>
+                                    Daily Spend
+                                </h3>
+                                {itinerary.map((day, i) => (
+                                    <motion.div key={day.day}
+                                        initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: i * 0.06 }}
+                                        style={{
+                                            background: C.surface, borderRadius: '14px',
+                                            padding: '16px 20px', border: `1px solid ${C.border}`,
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                            boxShadow: '0 1px 6px rgba(0,0,0,0.04)',
+                                        }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                            <div style={{
+                                                width: '36px', height: '36px', borderRadius: '10px',
+                                                background: C.amber, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontWeight: 800, fontSize: '14px', color: C.text,
+                                                fontFamily: 'Syne, sans-serif',
+                                            }}>{day.day}</div>
+                                            <div>
+                                                <div style={{ fontSize: '14px', fontWeight: 700, color: C.text }}>{day.date}</div>
+                                                <div style={{ fontSize: '12px', color: C.muted }}>{day.theme}</div>
+                                            </div>
+                                        </div>
+                                        <span style={{
+                                            fontFamily: 'Syne, sans-serif', fontWeight: 800,
+                                            fontSize: '16px', color: C.teal,
+                                        }}>
+                                            ₹{(day.dayBudget || 0).toLocaleString()}
+                                        </span>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
 
-                    </AnimatePresence>
-                </div>
+                    {/* ── AI CHAT TAB ────────────────────────────────────────── */}
+                    {activeTab === 'assistant' && (
+                        <motion.div key="assistant"
+                            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
+                            style={{
+                                height: '600px', maxWidth: '780px', margin: '0 auto',
+                                borderRadius: '20px', overflow: 'hidden',
+                                border: `1px solid ${C.border}`,
+                                boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+                            }}>
+                            <RahiChat tripContext={trip} />
+                        </motion.div>
+                    )}
+
+                </AnimatePresence>
             </main>
         </div>
     )
