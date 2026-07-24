@@ -97,33 +97,30 @@ const HomePage = () => {
         if (!formData.destination.trim()) return setError('Please enter a destination.')
         setLoading(true); setError('')
         try {
+            // In a monorepo Vercel deployment, /api/* is routed to backend via vercel.json.
+            // VITE_API_URL is only needed for separate frontend/backend Vercel projects.
             const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
             const targetUrl = `${apiBase}/api/trip/generate`
 
-            console.log(`[AI Trip Planner] Submitting request to: ${targetUrl}`)
+            console.log(`[AI Trip Planner] POST → ${targetUrl || '(relative) /api/trip/generate'}`)
 
-            let res = await fetch(targetUrl, {
+            const res = await fetch(targetUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             })
 
-            if (res.status === 405) {
-                console.warn('[405 Error] Server returned 405 Method Not Allowed.')
-                throw new Error('405 Method Not Allowed: Please ensure VITE_API_URL environment variable is set on your Vercel Frontend project pointing to your Vercel Backend deployment URL.')
-            }
-
             if (!res.ok) {
                 const text = await res.text().catch(() => '')
-                throw new Error(`Server returned HTTP ${res.status}: ${text || 'Unknown error'}`)
+                throw new Error(`Server error: ${res.status}${text ? ' — ' + text.substring(0, 200) : ''}`)
             }
 
             const tripData = await res.json()
-            if (!tripData?.itinerary) throw new Error('Invalid response payload format from server')
+            if (!tripData?.itinerary) throw new Error('Invalid response from server. Missing itinerary data.')
             navigate('/dashboard', { state: { tripData } })
         } catch (err) {
             console.error('[Trip Generator Error]:', err)
-            setError(err.message)
+            setError(`Failed to generate trip: ${err.message}`)
         } finally {
             setLoading(false)
         }
