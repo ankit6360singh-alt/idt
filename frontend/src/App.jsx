@@ -42,8 +42,10 @@ function App() {
                                 <Route path="/map" element={<MapPage />} />
                                 <Route path="/budget" element={<BudgetPlannerPage />} />
 
-                                {/* Protected Routes */}
-                                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                                {/* Dashboard is public — guests can plan & view trips without signing up */}
+                                <Route path="/dashboard" element={<Dashboard />} />
+
+                                {/* Protected Routes — login required */}
                                 <Route path="/my-trips" element={<ProtectedRoute><MyTripsPage /></ProtectedRoute>} />
                                 <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
                             </Routes>
