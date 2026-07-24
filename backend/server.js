@@ -11,6 +11,7 @@ import destinationRoutes from './src/routes/destinationRoutes.js';
 import placeRoutes from './src/routes/placeRoutes.js';
 import interactionRoutes from './src/routes/interactionRoutes.js';
 import chatRoutes from './src/routes/chatRoutes.js';
+import userTripRoutes from './src/routes/userTripRoutes.js';
 import { errorHandler } from './src/middleware/error.js';
 
 dotenv.config();
@@ -24,9 +25,9 @@ app.use(express.json());
 
 // Global Rate Limiter
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // Limit each IP to 200 requests per 15 mins
-  message: { success: false, error: 'Too many requests from this IP, please try again after 15 minutes.' },
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  message: { success: false, error: 'Too many requests, please try again later.' },
 });
 app.use('/api/', limiter);
 
@@ -37,9 +38,11 @@ if (process.env.MONGODB_URI) {
   console.warn('⚠️ MONGODB_URI not found in env. Running in demo mode.');
 }
 
-// API Routes
+// API Routes (Supporting both singular /api/trip and plural /api/trips for full frontend compatibility)
 app.use('/api/auth', authRoutes);
+app.use('/api/trip', tripRoutes);
 app.use('/api/trips', tripRoutes);
+app.use('/api/user', userTripRoutes);
 app.use('/api/destinations', destinationRoutes);
 app.use('/api/places', placeRoutes);
 app.use('/api/interactions', interactionRoutes);
