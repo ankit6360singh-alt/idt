@@ -19,14 +19,20 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Security & Parsing Middlewares
-app.use(cors());
+// Enable CORS with full HTTP method and headers support for cross-origin preflight requests
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+}));
+app.options('*', cors());
+
 app.use(express.json());
 
 // Global Rate Limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: 500,
   message: { success: false, error: 'Too many requests, please try again later.' },
 });
 app.use('/api/', limiter);
@@ -38,7 +44,7 @@ if (process.env.MONGODB_URI) {
   console.warn('⚠️ MONGODB_URI not found in env. Running in demo mode.');
 }
 
-// API Routes
+// API Routes (Supporting both singular /api/trip and plural /api/trips)
 app.use('/api/auth', authRoutes);
 app.use('/api/trip', tripRoutes);
 app.use('/api/trips', tripRoutes);

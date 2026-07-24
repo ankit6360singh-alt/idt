@@ -97,18 +97,33 @@ const HomePage = () => {
         if (!formData.destination.trim()) return setError('Please enter a destination.')
         setLoading(true); setError('')
         try {
-            const apiBase = import.meta.env.VITE_API_URL || ''
-            const res = await fetch(`${apiBase}/api/trip/generate`, {
+            const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+            const targetUrl = `${apiBase}/api/trip/generate`
+
+            console.log(`[AI Trip Planner] Submitting request to: ${targetUrl}`)
+
+            let res = await fetch(targetUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             })
-            if (!res.ok) throw new Error(`Server error: ${res.status}`)
+
+            if (res.status === 405) {
+                console.warn('[405 Error] Server returned 405 Method Not Allowed.')
+                throw new Error('405 Method Not Allowed: Please ensure VITE_API_URL environment variable is set on your Vercel Frontend project pointing to your Vercel Backend deployment URL.')
+            }
+
+            if (!res.ok) {
+                const text = await res.text().catch(() => '')
+                throw new Error(`Server returned HTTP ${res.status}: ${text || 'Unknown error'}`)
+            }
+
             const tripData = await res.json()
-            if (!tripData?.itinerary) throw new Error('Invalid response from server')
+            if (!tripData?.itinerary) throw new Error('Invalid response payload format from server')
             navigate('/dashboard', { state: { tripData } })
         } catch (err) {
-            setError(`Failed to generate trip: ${err.message}`)
+            console.error('[Trip Generator Error]:', err)
+            setError(err.message)
         } finally {
             setLoading(false)
         }
