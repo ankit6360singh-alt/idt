@@ -97,7 +97,8 @@ const HomePage = () => {
         if (!formData.destination.trim()) return setError('Please enter a destination.')
         setLoading(true); setError('')
         try {
-            const res = await fetch('/api/trip/generate', {
+            const apiBase = import.meta.env.VITE_API_URL || ''
+            const res = await fetch(`${apiBase}/api/trip/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

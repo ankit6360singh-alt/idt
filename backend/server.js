@@ -38,7 +38,7 @@ if (process.env.MONGODB_URI) {
   console.warn('⚠️ MONGODB_URI not found in env. Running in demo mode.');
 }
 
-// API Routes (Supporting both singular /api/trip and plural /api/trips for full frontend compatibility)
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/trip', tripRoutes);
 app.use('/api/trips', tripRoutes);
@@ -64,7 +64,11 @@ app.get('/api/health', (req, res) => {
 // Centralized Error Handling Middleware
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`🚀 TRAVLO Production Backend running on port ${PORT}`);
-  console.log(`📍 Health Check: http://localhost:${PORT}/api/health`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 TRAVLO Production Backend running on port ${PORT}`);
+    console.log(`📍 Health Check: http://localhost:${PORT}/api/health`);
+  });
+}
+
+export default app;
