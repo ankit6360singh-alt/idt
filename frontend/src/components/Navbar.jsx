@@ -8,15 +8,14 @@ import {
 } from 'lucide-react'
 
 const NAV_LINKS = [
-    { to: '/explore', icon: <Compass size={16} />, label: 'Explore' },
-    { to: '/map', icon: <Map size={16} />, label: 'Map' },
-    { to: '/dashboard', icon: <LayoutDashboard size={16} />, label: 'Dashboard' },
-    { to: '/my-trips', icon: <Bookmark size={16} />, label: 'My Trips' },
-    { to: '/budget', icon: <Wallet size={16} />, label: 'Budget' },
+    { to: '/explore', icon: <Compass size={15} />, label: 'Explore' },
+    { to: '/map', icon: <Map size={15} />, label: 'Map' },
+    { to: '/dashboard', icon: <LayoutDashboard size={15} />, label: 'Dashboard' },
+    { to: '/my-trips', icon: <Bookmark size={15} />, label: 'My Trips' },
+    { to: '/budget', icon: <Wallet size={15} />, label: 'Budget' },
 ]
 
-// Read / write theme to <html data-theme>
-const getStoredTheme = () => localStorage.getItem('travlo_theme') || 'dark'
+const getStoredTheme = () => localStorage.getItem('travlo_theme') || 'light'
 const applyTheme = t => {
     document.documentElement.setAttribute('data-theme', t)
     localStorage.setItem('travlo_theme', t)
@@ -32,10 +31,8 @@ const Navbar = () => {
     const [theme, setTheme] = useState(getStoredTheme)
     const [userMenu, setUserMenu] = useState(false)
 
-    // Apply saved theme on mount
     useEffect(() => { applyTheme(theme) }, [])
 
-    // Scroll shadow
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 20)
         window.addEventListener('scroll', onScroll, { passive: true })
@@ -48,92 +45,159 @@ const Navbar = () => {
     }
 
     const handleLogout = () => { logout(); navigate('/'); setUserMenu(false) }
-
     const isActive = to => location.pathname === to
+
+    const isHeroPage = location.pathname === '/'
+    const navBg = scrolled
+        ? (theme === 'dark' ? 'rgba(10,10,10,0.96)' : 'rgba(245,197,24,0.97)')
+        : 'transparent'
+    const textColor = theme === 'dark' ? '#F5C518' : '#0A0A0A'
 
     return (
         <>
             <motion.nav
                 initial={{ y: -80 }} animate={{ y: 0 }} transition={{ duration: 0.5 }}
-                className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 transition-all"
                 style={{
-                    background: scrolled ? 'var(--nav-bg)' : 'transparent',
+                    position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '0 5vw', height: '64px',
+                    background: navBg,
                     backdropFilter: scrolled ? 'blur(20px)' : 'none',
                     WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
-                    borderBottom: scrolled ? '1px solid var(--border-color)' : 'none',
-                    boxShadow: scrolled ? 'var(--shadow-md)' : 'none',
+                    borderBottom: scrolled ? '1px solid rgba(0,0,0,0.08)' : 'none',
+                    transition: 'all 0.3s ease',
                 }}>
+
                 {/* Logo */}
-                <Link to="/" className="text-xl font-black flex items-center gap-2" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                    <span className="gradient-text">TRAVLO</span>
-                    <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
-                        style={{ background: 'rgba(74,144,226,0.15)', color: '#4A90E2', border: '1px solid rgba(74,144,226,0.3)' }}>
-                        AI
-                    </span>
+                <Link to="/" style={{
+                    fontFamily: 'Syne, sans-serif',
+                    fontWeight: 800, fontSize: '22px',
+                    color: textColor,
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    textDecoration: 'none',
+                }}>
+                    TRAVLO
+                    <span style={{
+                        fontSize: '10px', fontWeight: 700,
+                        background: '#0A0A0A', color: '#F5C518',
+                        padding: '2px 8px', borderRadius: '100px',
+                        letterSpacing: '0.5px',
+                    }}>AI</span>
                 </Link>
 
-                {/* Desktop nav */}
-                <div className="hidden md:flex items-center gap-1">
+                {/* Desktop nav links */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                    className="hidden md:flex">
                     {NAV_LINKS.map(link => (
                         <Link key={link.to} to={link.to}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-100"
                             style={{
-                                color: isActive(link.to) ? '#4A90E2' : 'var(--text-secondary)',
-                                background: isActive(link.to) ? 'rgba(74,144,226,0.12)' : 'transparent',
-                                opacity: isActive(link.to) ? 1 : 0.8,
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                padding: '8px 14px', borderRadius: '100px',
+                                fontSize: '14px', fontWeight: 600,
+                                color: isActive(link.to) ? (theme === 'dark' ? '#0A0A0A' : '#fff') : textColor,
+                                background: isActive(link.to)
+                                    ? (theme === 'dark' ? '#F5C518' : '#0A0A0A')
+                                    : 'transparent',
+                                transition: 'all 0.2s ease',
+                                textDecoration: 'none',
+                                opacity: isActive(link.to) ? 1 : 0.7,
+                            }}
+                            onMouseEnter={e => {
+                                if (!isActive(link.to)) {
+                                    e.currentTarget.style.opacity = '1'
+                                    e.currentTarget.style.background = 'rgba(0,0,0,0.08)'
+                                }
+                            }}
+                            onMouseLeave={e => {
+                                if (!isActive(link.to)) {
+                                    e.currentTarget.style.opacity = '0.7'
+                                    e.currentTarget.style.background = 'transparent'
+                                }
                             }}>
-                            {link.icon}{link.label}
+                            {link.icon} {link.label}
                         </Link>
                     ))}
                 </div>
 
                 {/* Right actions */}
-                <div className="flex items-center gap-2">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {/* Theme toggle */}
                     <motion.button whileTap={{ scale: 0.9 }} onClick={toggleTheme}
-                        className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
-                        style={{ background: 'rgba(74,144,226,0.1)', color: '#4A90E2' }}>
+                        style={{
+                            width: '36px', height: '36px', borderRadius: '50%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: 'rgba(0,0,0,0.1)',
+                            border: 'none', cursor: 'pointer',
+                            color: textColor,
+                        }}>
                         {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
                     </motion.button>
 
                     {isAuthenticated ? (
-                        <div className="relative">
+                        <div style={{ position: 'relative' }}>
                             <motion.button whileTap={{ scale: 0.95 }}
                                 onClick={() => setUserMenu(m => !m)}
-                                className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all"
-                                style={{ background: 'rgba(74,144,226,0.1)' }}>
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                                    style={{ background: 'linear-gradient(135deg,#4A90E2,#50C9CE)' }}>
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '8px',
+                                    padding: '6px 12px 6px 6px', borderRadius: '100px',
+                                    background: '#0A0A0A', border: 'none', cursor: 'pointer',
+                                }}>
+                                <div style={{
+                                    width: '28px', height: '28px', borderRadius: '50%',
+                                    background: '#F5C518',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: '13px', fontWeight: 800, color: '#0A0A0A',
+                                }}>
                                     {user?.name?.[0]?.toUpperCase() || 'U'}
                                 </div>
-                                <span className="text-sm font-medium hidden sm:inline" style={{ color: 'var(--text-primary)' }}>
+                                <span style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }}
+                                    className="hidden sm:inline">
                                     {user?.name?.split(' ')[0]}
                                 </span>
                             </motion.button>
 
                             <AnimatePresence>
                                 {userMenu && (
-                                    <motion.div initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
                                         transition={{ duration: 0.15 }}
-                                        className="absolute right-0 mt-2 w-48 rounded-2xl overflow-hidden shadow-xl z-50"
-                                        style={{ background: 'var(--card-surface)', border: '1px solid var(--border-color)' }}>
+                                        style={{
+                                            position: 'absolute', right: 0, top: '48px',
+                                            width: '200px', borderRadius: '16px',
+                                            background: '#fff', boxShadow: '0 16px 48px rgba(0,0,0,0.18)',
+                                            border: '1px solid rgba(0,0,0,0.08)',
+                                            overflow: 'hidden', zIndex: 50,
+                                        }}>
                                         {[
                                             { icon: <User size={14} />, label: 'Profile', to: '/profile' },
                                             { icon: <Bookmark size={14} />, label: 'My Trips', to: '/my-trips' },
                                         ].map(item => (
-                                            <button key={item.label} onClick={() => { navigate(item.to); setUserMenu(false) }}
-                                                className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-left transition-all hover:bg-opacity-50"
-                                                style={{ color: 'var(--text-primary)' }}
-                                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(74,144,226,0.08)'}
+                                            <button key={item.label}
+                                                onClick={() => { navigate(item.to); setUserMenu(false) }}
+                                                style={{
+                                                    width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+                                                    padding: '12px 16px', fontSize: '14px', fontWeight: 600,
+                                                    color: '#0A0A0A', background: 'transparent',
+                                                    border: 'none', cursor: 'pointer', textAlign: 'left',
+                                                    transition: 'background 0.15s',
+                                                }}
+                                                onMouseEnter={e => e.currentTarget.style.background = '#FFF9E0'}
                                                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                                                <span style={{ color: '#4A90E2' }}>{item.icon}</span>{item.label}
+                                                <span style={{ color: '#F5C518' }}>{item.icon}</span> {item.label}
                                             </button>
                                         ))}
-                                        <div style={{ borderTop: '1px solid var(--border-color)' }}>
+                                        <div style={{ borderTop: '1px solid #F0F0F0' }}>
                                             <button onClick={handleLogout}
-                                                className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-left transition-all"
-                                                style={{ color: '#FF6B6B' }}
-                                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,107,107,0.08)'}
+                                                style={{
+                                                    width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+                                                    padding: '12px 16px', fontSize: '14px', fontWeight: 600,
+                                                    color: '#E53E3E', background: 'transparent',
+                                                    border: 'none', cursor: 'pointer', textAlign: 'left',
+                                                    transition: 'background 0.15s',
+                                                }}
+                                                onMouseEnter={e => e.currentTarget.style.background = '#FFF5F5'}
                                                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                                 <LogOut size={14} /> Logout
                                             </button>
@@ -143,20 +207,46 @@ const Navbar = () => {
                             </AnimatePresence>
                         </div>
                     ) : (
-                        <div className="hidden sm:flex items-center gap-2">
-                            <Link to="/login" className="btn btn-ghost btn-sm">
-                                <LogIn size={15} /> Login
+                        <div className="hidden sm:flex" style={{ alignItems: 'center', gap: '8px', display: 'flex' }}>
+                            <Link to="/login"
+                                style={{
+                                    padding: '8px 18px', borderRadius: '100px',
+                                    fontSize: '14px', fontWeight: 700,
+                                    color: textColor, textDecoration: 'none',
+                                    border: '2px solid rgba(0,0,0,0.18)',
+                                    transition: 'all 0.2s',
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.08)' }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
+                                Log in
                             </Link>
-                            <Link to="/signup" className="btn btn-primary btn-sm">
-                                <Sparkles size={15} /> Sign Up
+                            <Link to="/signup"
+                                style={{
+                                    padding: '8px 18px', borderRadius: '100px',
+                                    fontSize: '14px', fontWeight: 700,
+                                    background: '#0A0A0A', color: '#F5C518',
+                                    textDecoration: 'none',
+                                    display: 'flex', alignItems: 'center', gap: '6px',
+                                    transition: 'all 0.2s',
+                                    boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)' }}
+                                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}>
+                                <Sparkles size={13} /> Get started
                             </Link>
                         </div>
                     )}
 
                     {/* Mobile menu button */}
-                    <button className="md:hidden w-9 h-9 rounded-full flex items-center justify-center"
-                        style={{ background: 'rgba(74,144,226,0.1)', color: '#4A90E2' }}
-                        onClick={() => setOpen(o => !o)}>
+                    <button
+                        className="md:hidden"
+                        onClick={() => setOpen(o => !o)}
+                        style={{
+                            width: '36px', height: '36px', borderRadius: '50%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: 'rgba(0,0,0,0.1)', border: 'none',
+                            cursor: 'pointer', color: textColor,
+                        }}>
                         {open ? <X size={18} /> : <Menu size={18} />}
                     </button>
                 </div>
@@ -165,24 +255,46 @@ const Navbar = () => {
             {/* Mobile menu */}
             <AnimatePresence>
                 {open && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                        className="fixed top-14 left-0 right-0 z-40 overflow-hidden"
-                        style={{ background: 'var(--nav-bg)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border-color)' }}>
-                        <div className="p-4 space-y-1">
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        style={{
+                            position: 'fixed', top: '64px', left: 0, right: 0, zIndex: 40,
+                            background: theme === 'dark' ? '#0A0A0A' : '#F5C518',
+                            borderBottom: '1px solid rgba(0,0,0,0.1)',
+                            overflow: 'hidden',
+                        }}>
+                        <div style={{ padding: '16px 5vw', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             {NAV_LINKS.map(link => (
                                 <Link key={link.to} to={link.to} onClick={() => setOpen(false)}
-                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all"
                                     style={{
-                                        color: isActive(link.to) ? '#4A90E2' : 'var(--text-primary)',
-                                        background: isActive(link.to) ? 'rgba(74,144,226,0.12)' : 'transparent',
+                                        display: 'flex', alignItems: 'center', gap: '10px',
+                                        padding: '12px 16px', borderRadius: '12px',
+                                        fontSize: '15px', fontWeight: 600,
+                                        color: isActive(link.to) ? '#fff' : textColor,
+                                        background: isActive(link.to) ? '#0A0A0A' : 'transparent',
+                                        textDecoration: 'none', transition: 'all 0.2s',
                                     }}>
-                                    {link.icon}{link.label}
+                                    {link.icon} {link.label}
                                 </Link>
                             ))}
                             {!isAuthenticated && (
-                                <div className="flex gap-2 pt-2">
-                                    <Link to="/login" onClick={() => setOpen(false)} className="btn btn-outline btn-sm flex-1">Login</Link>
-                                    <Link to="/signup" onClick={() => setOpen(false)} className="btn btn-primary btn-sm flex-1">Sign Up</Link>
+                                <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.1)', marginTop: '8px' }}>
+                                    <Link to="/login" onClick={() => setOpen(false)}
+                                        style={{
+                                            flex: 1, textAlign: 'center', padding: '12px',
+                                            borderRadius: '12px', fontWeight: 700, fontSize: '15px',
+                                            border: '2px solid rgba(0,0,0,0.2)', color: textColor,
+                                            textDecoration: 'none',
+                                        }}>Login</Link>
+                                    <Link to="/signup" onClick={() => setOpen(false)}
+                                        style={{
+                                            flex: 1, textAlign: 'center', padding: '12px',
+                                            borderRadius: '12px', fontWeight: 700, fontSize: '15px',
+                                            background: '#0A0A0A', color: '#F5C518',
+                                            textDecoration: 'none',
+                                        }}>Sign Up</Link>
                                 </div>
                             )}
                         </div>
@@ -191,7 +303,7 @@ const Navbar = () => {
             </AnimatePresence>
 
             {/* Overlay to close user menu */}
-            {userMenu && <div className="fixed inset-0 z-30" onClick={() => setUserMenu(false)} />}
+            {userMenu && <div style={{ position: 'fixed', inset: 0, zIndex: 30 }} onClick={() => setUserMenu(false)} />}
         </>
     )
 }

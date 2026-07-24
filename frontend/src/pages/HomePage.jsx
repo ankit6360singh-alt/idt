@@ -3,74 +3,88 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
 import {
-    MapPin, Sparkles, Globe, Star, Users, TrendingUp,
-    ChevronRight, Compass, Plane, Mountain, Waves,
-    Coffee, Shield, Zap, Heart, Menu, X, Moon, Sun,
-    ArrowRight, Search, Calendar, Wallet, ChevronDown
+    MapPin, Sparkles, Star, Plane, Shield, Zap, Heart,
+    ArrowRight, Calendar, Wallet, ChevronDown, Play, Search
 } from 'lucide-react'
-import Navbar from '../components/Navbar'
 
-// ── DATA ───────────────────────────────────────────────────────────────────
+// ── TRAVEL STYLES ──────────────────────────────────────────────────────────
 const TRAVEL_STYLES = [
-    { id: 'solo', name: 'Solo', icon: '🎒', desc: 'Discover yourself' },
-    { id: 'couple', name: 'Couple', icon: '💑', desc: 'Romance on the road' },
-    { id: 'family', name: 'Family', icon: '👨‍👩‍👧‍👦', desc: 'Fun for all ages' },
-    { id: 'friends', name: 'Friends', icon: '🍻', desc: 'Shared adventures' },
-    { id: 'student', name: 'Student', icon: '📚', desc: 'Budget-smart travel' },
-    { id: 'luxury', name: 'Luxury', icon: '✨', desc: 'Premium experiences' },
-    { id: 'backpacking', name: 'Backpacking', icon: '🌍', desc: 'Raw & authentic' },
-    { id: 'adventure', name: 'Adventure', icon: '🧗', desc: 'Thrill & adrenaline' },
-    { id: 'nature', name: 'Nature', icon: '🌿', desc: 'Forests & mountains' },
-    { id: 'food', name: 'Food', icon: '🍜', desc: 'Taste the world' },
-    { id: 'roadtrip', name: 'Road Trip', icon: '🚗', desc: 'Freedom of the road' },
-    { id: 'women', name: "Women's", icon: '👩', desc: 'Safe & empowering' },
-]
-
-const DESTINATIONS = [
-    { name: 'Goa, India', tag: 'Beach', img: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=600&q=80', rating: 4.8 },
-    { name: 'Manali, India', tag: 'Mountains', img: 'https://images.unsplash.com/photo-1597167430547-e9fde751f5be?w=600&q=80', rating: 4.9 },
-    { name: 'Rajasthan, India', tag: 'Heritage', img: 'https://images.unsplash.com/photo-1477587458883-47145ed94245?w=600&q=80', rating: 4.7 },
-    { name: 'Kerala, India', tag: 'Nature', img: 'https://images.unsplash.com/photo-1593693411515-c20261bcad6e?w=600&q=80', rating: 4.8 },
-    { name: 'Leh Ladakh, India', tag: 'Adventure', img: 'https://images.unsplash.com/photo-1594818379496-da1e345b0ded?w=600&q=80', rating: 5.0 },
-    { name: 'Varanasi, India', tag: 'Spiritual', img: 'https://images.unsplash.com/photo-1561361058-c24e02f90c02?w=600&q=80', rating: 4.6 },
+    { id: 'solo', name: 'Solo', icon: '🎒' },
+    { id: 'couple', name: 'Couple', icon: '💑' },
+    { id: 'family', name: 'Family', icon: '👨‍👩‍👧‍👦' },
+    { id: 'friends', name: 'Friends', icon: '🍻' },
+    { id: 'adventure', name: 'Adventure', icon: '🧗' },
+    { id: 'luxury', name: 'Luxury', icon: '✨' },
+    { id: 'backpacking', name: 'Backpacking', icon: '🌍' },
+    { id: 'nature', name: 'Nature', icon: '🌿' },
+    { id: 'food', name: 'Food', icon: '🍜' },
+    { id: 'women', name: "Women's", icon: '👩' },
 ]
 
 const FEATURES = [
-    { icon: <Sparkles size={28} />, title: 'AI-Powered Planning', desc: 'RAHI generates personalized day-by-day itineraries in seconds using Google Gemini.' },
-    { icon: <Wallet size={28} />, title: 'Smart Budget', desc: 'Intelligent cost breakdown across hotels, food, transport, and attractions.' },
-    { icon: <Globe size={28} />, title: 'Interactive Maps', desc: 'Explore destinations, routes, and nearby places on beautiful OpenStreetMap layers.' },
-    { icon: <Shield size={28} />, title: 'Safety Insights', desc: 'Safety scores, local tips, and emergency contacts always at your fingertips.' },
-    { icon: <Zap size={28} />, title: 'Real-Time Weather', desc: '7-day forecasts, UV index, rain probability, and wind data for your destination.' },
-    { icon: <Heart size={28} />, title: 'Save & Export', desc: 'Save trips to your account, export as PDF, and share with travel companions.' },
+    { icon: <Sparkles size={24} />, title: 'AI Itinerary', desc: 'Google Gemini builds your perfect day-by-day plan in seconds.' },
+    { icon: <Wallet size={24} />, title: 'Smart Budget', desc: 'Intelligent cost breakdown across hotels, food & activities.' },
+    { icon: <Shield size={24} />, title: 'Safety Scores', desc: 'Local safety insights, tips & emergency contacts always ready.' },
+    { icon: <Zap size={24} />, title: 'Live Weather', desc: '7-day forecast and climate data for your destination.' },
+    { icon: <MapPin size={24} />, title: 'Interactive Map', desc: 'Explore routes, nearby places on beautiful OpenStreetMap.' },
+    { icon: <Heart size={24} />, title: 'Save & Export', desc: 'Export as PDF, save to account & share with travel companions.' },
 ]
 
-const TESTIMONIALS = [
-    { name: 'Priya Sharma', role: 'Digital Nomad', text: 'TRAVLO replaced my 3-hour planning sessions with a 30-second AI-generated itinerary. Absolutely magical.', rating: 5 },
-    { name: 'Rahul Mehta', role: 'Adventure Traveler', text: 'The budget breakdown saved us ₹15,000 on our Ladakh trip. The AI suggestions were spot on.', rating: 5 },
-    { name: 'Ananya Patel', role: 'Family Traveler', text: 'Finally a travel planner that understands family needs. The safety tips and family-friendly filters are a lifesaver.', rating: 5 },
+const DESTINATIONS = [
+    { name: 'Goa', country: 'India', tag: 'Beach', img: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=500&q=80', rating: 4.8 },
+    { name: 'Manali', country: 'India', tag: 'Mountains', img: 'https://images.unsplash.com/photo-1597167430547-e9fde751f5be?w=500&q=80', rating: 4.9 },
+    { name: 'Rajasthan', country: 'India', tag: 'Heritage', img: 'https://images.unsplash.com/photo-1477587458883-47145ed94245?w=500&q=80', rating: 4.7 },
+    { name: 'Kerala', country: 'India', tag: 'Nature', img: 'https://images.unsplash.com/photo-1593693411515-c20261bcad6e?w=500&q=80', rating: 4.8 },
 ]
 
-const STATS = [
-    { num: '50K+', label: 'Trips Generated' },
-    { num: '200+', label: 'Destinations' },
-    { num: '98%', label: 'User Satisfaction' },
-    { num: '24/7', label: 'AI Available' },
-]
-
-const HERO_WORDS = ['Smarter', 'Personalized', 'Magical', 'Unforgettable']
+// ── FLOATING CARD COMPONENT ────────────────────────────────────────────────
+const FloatingCard = ({ style, children, delay = 0 }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay, duration: 0.6 }}
+        style={{
+            position: 'absolute',
+            background: 'rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '16px',
+            padding: '10px 14px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
+            border: '1px solid rgba(255,255,255,0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '13px',
+            fontWeight: 600,
+            color: '#0A0A0A',
+            whiteSpace: 'nowrap',
+            ...style,
+        }}
+    >
+        {children}
+    </motion.div>
+)
 
 // ── ANIMATED COUNTER ───────────────────────────────────────────────────────
 const Counter = ({ value }) => {
     const [display, setDisplay] = useState('0')
     const ref = useRef(null)
     const inView = useInView(ref, { once: true })
-    useEffect(() => {
-        if (inView) {
-            setDisplay(value)
-        }
-    }, [inView, value])
+    useEffect(() => { if (inView) setDisplay(value) }, [inView, value])
     return <span ref={ref}>{display}</span>
 }
+
+// ── CLOUD SVG ──────────────────────────────────────────────────────────────
+const Cloud = ({ style }) => (
+    <div style={{ position: 'absolute', opacity: 0.9, ...style }}>
+        <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+            <ellipse cx="100" cy="55" rx="80" ry="25" fill="white" />
+            <ellipse cx="70" cy="45" rx="45" ry="32" fill="white" />
+            <ellipse cx="130" cy="48" rx="38" ry="28" fill="white" />
+            <ellipse cx="100" cy="40" rx="50" ry="30" fill="white" />
+        </svg>
+    </div>
+)
 
 // ── MAIN COMPONENT ─────────────────────────────────────────────────────────
 const HomePage = () => {
@@ -80,14 +94,7 @@ const HomePage = () => {
     const [formData, setFormData] = useState({ destination: '', days: '3', budget: '30000', travelerType: 'solo', preferences: '' })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
-    const [heroWordIdx, setHeroWordIdx] = useState(0)
-    const [mobileMenu, setMobileMenu] = useState(false)
-
-    // Cycle hero word
-    useEffect(() => {
-        const t = setInterval(() => setHeroWordIdx(i => (i + 1) % HERO_WORDS.length), 2800)
-        return () => clearInterval(t)
-    }, [])
+    const [plannerOpen, setPlannerOpen] = useState(false)
 
     const handleChange = e => setFormData(p => ({ ...p, [e.target.name]: e.target.value }))
     const handleStyleSelect = id => setFormData(p => ({ ...p, travelerType: id }))
@@ -97,24 +104,18 @@ const HomePage = () => {
         if (!formData.destination.trim()) return setError('Please enter a destination.')
         setLoading(true); setError('')
         try {
-            // In a monorepo Vercel deployment, /api/* is routed to backend via vercel.json.
-            // VITE_API_URL is only needed for separate frontend/backend Vercel projects.
             const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
             const targetUrl = `${apiBase}/api/trip/generate`
-
             console.log(`[AI Trip Planner] POST → ${targetUrl || '(relative) /api/trip/generate'}`)
-
             const res = await fetch(targetUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             })
-
             if (!res.ok) {
                 const text = await res.text().catch(() => '')
                 throw new Error(`Server error: ${res.status}${text ? ' — ' + text.substring(0, 200) : ''}`)
             }
-
             const tripData = await res.json()
             if (!tripData?.itinerary) throw new Error('Invalid response from server. Missing itinerary data.')
             navigate('/dashboard', { state: { tripData } })
@@ -126,459 +127,678 @@ const HomePage = () => {
         }
     }
 
-    const scrollToPlanner = () => document.getElementById('planner')?.scrollIntoView({ behavior: 'smooth' })
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
 
     return (
-        <div style={{ background: 'var(--bg-primary)', minHeight: '100vh' }}>
-            <Navbar />
+        <div style={{ background: 'var(--bg-primary)', minHeight: '100vh', overflowX: 'hidden' }}>
 
-            {/* ── HERO ── */}
-            <section className="relative min-h-screen flex items-center overflow-hidden" style={{ background: 'linear-gradient(135deg, #0F1928 0%, #1E2D3D 50%, #0F1928 100%)' }}>
-                {/* Animated background blobs */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full opacity-20 animate-float"
-                        style={{ background: 'radial-gradient(circle, #4A90E2, transparent)', filter: 'blur(60px)' }} />
-                    <div className="absolute top-1/3 -right-20 w-80 h-80 rounded-full opacity-15 animate-float"
-                        style={{ background: 'radial-gradient(circle, #50C9CE, transparent)', filter: 'blur(60px)', animationDelay: '1.5s' }} />
-                    <div className="absolute bottom-20 left-1/3 w-64 h-64 rounded-full opacity-10 animate-float"
-                        style={{ background: 'radial-gradient(circle, #FFD93D, transparent)', filter: 'blur(50px)', animationDelay: '3s' }} />
-                    {/* Grid overlay */}
-                    <div className="absolute inset-0" style={{
-                        backgroundImage: 'linear-gradient(rgba(74,144,226,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(74,144,226,0.05) 1px, transparent 1px)',
-                        backgroundSize: '60px 60px'
+            {/* ── HERO SECTION ─────────────────────────────────────────────── */}
+            <section style={{
+                minHeight: '100vh',
+                background: 'var(--bg-primary)',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+            }}>
+                {/* Decorative shadow on floor */}
+                <div style={{
+                    position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+                    width: '60%', height: '80px',
+                    background: 'radial-gradient(ellipse, rgba(0,0,0,0.18) 0%, transparent 70%)',
+                    pointerEvents: 'none',
+                }} />
+
+                {/* Clouds */}
+                <Cloud style={{ top: '8%', left: '38%', width: '200px' }} />
+                <Cloud style={{ top: '18%', right: '12%', width: '140px', opacity: 0.7 }} />
+                <Cloud style={{ bottom: '28%', left: '18%', width: '120px', opacity: 0.5 }} />
+
+                {/* Right arch/oval element */}
+                <div style={{
+                    position: 'absolute',
+                    right: '-40px',
+                    top: '50%',
+                    transform: 'translateY(-52%)',
+                    width: '360px',
+                    height: '480px',
+                    borderRadius: '200px 200px 200px 200px',
+                    background: 'linear-gradient(160deg, #0D3D3D 0%, #0D6E6E 60%, #1a9090 100%)',
+                    overflow: 'hidden',
+                    boxShadow: '0 24px 80px rgba(0,0,0,0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1,
+                }}>
+                    {/* Landmark inside arch */}
+                    <img
+                        src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=600&q=80"
+                        alt="Taj Mahal"
+                        style={{
+                            width: '100%', height: '100%',
+                            objectFit: 'cover',
+                            opacity: 0.7,
+                            mixBlendMode: 'luminosity',
+                        }}
+                    />
+                    <div style={{
+                        position: 'absolute', inset: 0,
+                        background: 'linear-gradient(to top, rgba(13,61,61,0.7) 0%, transparent 50%)',
                     }} />
                 </div>
 
-                <div className="container relative z-10 py-32">
-                    <div className="grid lg:grid-cols-2 gap-12 items-center">
-                        {/* Left content */}
-                        <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: 'easeOut' }}>
-                            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 glass text-sm font-medium"
-                                style={{ color: '#50C9CE', border: '1px solid rgba(80,201,206,0.3)' }}>
-                                <Sparkles size={14} />
-                                AI-Powered Travel Planning
-                            </motion.div>
+                {/* Floating landmark images */}
+                <motion.div
+                    animate={{ y: [0, -16, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                    style={{
+                        position: 'absolute',
+                        right: '340px',
+                        top: '15%',
+                        width: '120px',
+                        zIndex: 2,
+                        filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.35))',
+                    }}>
+                    <img src="https://images.unsplash.com/photo-1543349689-9a4d426bee8e?w=300&q=80" alt="Big Ben"
+                        style={{ width: '100%', borderRadius: '12px', objectFit: 'cover', height: '180px' }} />
+                </motion.div>
 
-                            <h1 className="text-5xl lg:text-7xl font-black mb-4 leading-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#fff' }}>
-                                Plan{' '}
-                                <AnimatePresence mode="wait">
-                                    <motion.span key={heroWordIdx}
-                                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                                        transition={{ duration: 0.4 }}
-                                        className="gradient-text inline-block">
-                                        {HERO_WORDS[heroWordIdx]}
-                                    </motion.span>
-                                </AnimatePresence>
-                                <br />Trips
-                            </h1>
+                <motion.div
+                    animate={{ y: [0, 12, 0] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                    style={{
+                        position: 'absolute',
+                        right: '260px',
+                        bottom: '22%',
+                        width: '110px',
+                        zIndex: 2,
+                        filter: 'drop-shadow(0 16px 32px rgba(0,0,0,0.3))',
+                    }}>
+                    <img src="https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=300&q=80" alt="Eiffel"
+                        style={{ width: '100%', borderRadius: '12px', objectFit: 'cover', height: '160px' }} />
+                </motion.div>
 
-                            <p className="text-lg mb-8 leading-relaxed" style={{ color: '#A0AEC0' }}>
-                                {isAuthenticated
-                                    ? `Welcome back, ${user?.name?.split(' ')[0]}! Ready for your next adventure? Let RAHI plan it in seconds.`
-                                    : 'TRAVLO uses Google Gemini AI to create personalized itineraries, smart budgets, and real-time insights — all in one click.'}
-                            </p>
+                {/* Floating UI Cards */}
+                <FloatingCard style={{ top: '28%', right: '410px', zIndex: 3 }} delay={0.5}>
+                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#FF6B6B,#FFD93D)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 800 }}>R</div>
+                    <div>
+                        <div style={{ fontSize: 11, color: '#666', fontWeight: 500 }}>Destination</div>
+                        <div style={{ fontSize: 13, fontWeight: 700 }}>📍 Jaipur, India</div>
+                    </div>
+                </FloatingCard>
 
-                            <div className="flex flex-wrap gap-4">
-                                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-                                    onClick={scrollToPlanner} className="btn btn-primary btn-lg">
-                                    <Sparkles size={18} /> Start Planning Free
-                                </motion.button>
-                                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-                                    onClick={() => navigate('/explore')} className="btn btn-outline btn-lg"
-                                    style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.2)' }}>
-                                    <Compass size={18} /> Explore Destinations
-                                </motion.button>
-                            </div>
+                <FloatingCard style={{ bottom: '32%', right: '430px', zIndex: 3 }} delay={0.8}>
+                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#4A90E2,#50C9CE)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 800 }}>A</div>
+                    <div>
+                        <div style={{ fontSize: 11, color: '#666', fontWeight: 500 }}>AI Generated</div>
+                        <div style={{ fontSize: 13, fontWeight: 700 }}>⚡ 5-Day Itinerary</div>
+                    </div>
+                </FloatingCard>
 
-                            {/* Mini stats */}
-                            <div className="flex gap-8 mt-10">
-                                {STATS.slice(0, 3).map(s => (
-                                    <div key={s.label}>
-                                        <div className="text-2xl font-bold gradient-text">{s.num}</div>
-                                        <div className="text-xs" style={{ color: '#A0AEC0' }}>{s.label}</div>
-                                    </div>
-                                ))}
-                            </div>
+                <FloatingCard style={{ top: '60%', right: '50px', zIndex: 3 }} delay={1.1}>
+                    <span style={{ fontSize: 18 }}>❤️</span>
+                    <div>
+                        <div style={{ fontSize: 11, color: '#666', fontWeight: 500 }}>Saved by</div>
+                        <div style={{ fontSize: 13, fontWeight: 700 }}>12.4k travelers</div>
+                    </div>
+                </FloatingCard>
+
+                {/* Hero content */}
+                <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '120px 5vw 60px',
+                    maxWidth: '720px',
+                    position: 'relative',
+                    zIndex: 2,
+                }}>
+                    <div>
+                        {/* Badge */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            style={{
+                                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                                background: 'rgba(0,0,0,0.08)', borderRadius: '100px',
+                                padding: '6px 16px', marginBottom: '28px',
+                                fontSize: '13px', fontWeight: 600,
+                            }}>
+                            <Sparkles size={14} /> Powered by Google Gemini AI
                         </motion.div>
 
-                        {/* Right — animated globe SVG + floating cards */}
-                        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
-                            className="relative hidden lg:flex items-center justify-center">
-                            {/* Globe */}
-                            <div className="relative w-96 h-96 animate-float">
-                                <svg viewBox="0 0 400 400" className="w-full h-full" style={{ filter: 'drop-shadow(0 0 60px rgba(74,144,226,0.4))' }}>
-                                    <defs>
-                                        <radialGradient id="globeGrad" cx="40%" cy="35%" r="60%">
-                                            <stop offset="0%" stopColor="#1E3A5F" />
-                                            <stop offset="100%" stopColor="#0A1628" />
-                                        </radialGradient>
-                                        <radialGradient id="oceanGrad" cx="50%" cy="50%" r="50%">
-                                            <stop offset="0%" stopColor="#1565C0" stopOpacity="0.8" />
-                                            <stop offset="100%" stopColor="#0D47A1" stopOpacity="0.4" />
-                                        </radialGradient>
-                                    </defs>
-                                    {/* Main globe */}
-                                    <circle cx="200" cy="200" r="160" fill="url(#globeGrad)" stroke="#4A90E2" strokeWidth="1.5" opacity="0.9" />
-                                    {/* Grid lines */}
-                                    {[-4, -3, -2, -1, 0, 1, 2, 3, 4].map(i => (
-                                        <ellipse key={`h${i}`} cx="200" cy="200" rx="160" ry={Math.abs(i) * 18} fill="none" stroke="#4A90E2" strokeWidth="0.5" opacity="0.2" />
-                                    ))}
-                                    {[0, 30, 60, 90, 120, 150].map(angle => {
-                                        const rad = (angle * Math.PI) / 180
-                                        return <line key={`v${angle}`} x1={200 + 160 * Math.cos(rad)} y1={200 + 160 * Math.sin(rad)}
-                                            x2={200 - 160 * Math.cos(rad)} y2={200 - 160 * Math.sin(rad)}
-                                            stroke="#4A90E2" strokeWidth="0.5" opacity="0.2" />
-                                    })}
-                                    {/* Land masses (simplified) */}
-                                    {[
-                                        { cx: 180, cy: 160, rx: 35, ry: 25 },
-                                        { cx: 240, cy: 190, rx: 28, ry: 22 },
-                                        { cx: 155, cy: 220, rx: 22, ry: 30 },
-                                        { cx: 270, cy: 150, rx: 20, ry: 18 },
-                                        { cx: 160, cy: 260, rx: 18, ry: 15 },
-                                    ].map((land, i) => (
-                                        <ellipse key={i} {...land} fill="#2E7D32" opacity="0.7" />
-                                    ))}
-                                    {/* Highlight */}
-                                    <ellipse cx="155" cy="145" rx="70" ry="55" fill="rgba(255,255,255,0.04)" />
-                                    {/* Equator */}
-                                    <line x1="40" y1="200" x2="360" y2="200" stroke="#4A90E2" strokeWidth="1" opacity="0.4" />
-                                    {/* Markers */}
-                                    {[
-                                        { cx: 185, cy: 165 },
-                                        { cx: 248, cy: 195 },
-                                        { cx: 160, cy: 240 },
-                                    ].map((m, i) => (
-                                        <g key={i}>
-                                            <circle cx={m.cx} cy={m.cy} r="5" fill="#FF6B6B" opacity="0.9" />
-                                            <circle cx={m.cx} cy={m.cy} r="9" fill="transparent" stroke="#FF6B6B" strokeWidth="1.5" opacity="0.5" />
-                                        </g>
-                                    ))}
-                                </svg>
+                        {/* Main headline */}
+                        <motion.h1
+                            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7, delay: 0.1 }}
+                            style={{
+                                fontFamily: 'Syne, Inter, sans-serif',
+                                fontSize: 'clamp(52px, 7vw, 96px)',
+                                fontWeight: 800,
+                                lineHeight: 1.0,
+                                color: 'var(--text-primary)',
+                                letterSpacing: '-2px',
+                                marginBottom: '24px',
+                            }}>
+                            Travel<br />
+                            <span style={{ color: 'rgba(0,0,0,0.4)' }}>differently.</span>
+                        </motion.h1>
 
-                                {/* Floating info cards */}
-                                <motion.div animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 3 }}
-                                    className="absolute -top-4 -right-8 glass rounded-2xl p-3 flex items-center gap-3"
-                                    style={{ border: '1px solid rgba(74,144,226,0.3)', minWidth: 160 }}>
-                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg" style={{ background: 'rgba(74,144,226,0.2)' }}>✈️</div>
-                                    <div>
-                                        <div className="text-xs font-semibold" style={{ color: '#fff' }}>Goa, India</div>
-                                        <div className="text-xs" style={{ color: '#A0AEC0' }}>3 days · ₹28,000</div>
-                                    </div>
-                                </motion.div>
+                        {/* Subtitle */}
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.25 }}
+                            style={{
+                                fontSize: 'clamp(16px, 2vw, 20px)',
+                                color: 'var(--text-secondary)',
+                                maxWidth: '480px',
+                                lineHeight: 1.65,
+                                marginBottom: '40px',
+                                fontWeight: 500,
+                            }}>
+                            TRAVLO brings the world to you and empowers you to experience it <strong style={{ color: 'var(--text-primary)' }}>your way.</strong>
+                        </motion.p>
 
-                                <motion.div animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 3.5, delay: 0.8 }}
-                                    className="absolute -bottom-2 -left-8 glass rounded-2xl p-3 flex items-center gap-3"
-                                    style={{ border: '1px solid rgba(80,201,206,0.3)', minWidth: 170 }}>
-                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg" style={{ background: 'rgba(80,201,206,0.2)' }}>🤖</div>
-                                    <div>
-                                        <div className="text-xs font-semibold" style={{ color: '#fff' }}>RAHI AI</div>
-                                        <div className="text-xs" style={{ color: '#50C9CE' }}>Itinerary ready ✓</div>
-                                    </div>
-                                </motion.div>
-                            </div>
-                        </motion.div>
-                    </div>
-
-                    {/* Scroll indicator */}
-                    <motion.div animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 1.8 }}
-                        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer"
-                        onClick={scrollToPlanner}>
-                        <span className="text-xs" style={{ color: '#A0AEC0' }}>Scroll to plan</span>
-                        <ChevronDown size={20} style={{ color: '#4A90E2' }} />
-                    </motion.div>
-                </div>
-            </section>
-
-            {/* ── TRAVEL STYLE SELECTOR ── */}
-            <section className="py-20 container">
-                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-                    <div className="text-center mb-12">
-                        <span className="text-sm font-semibold uppercase tracking-widest" style={{ color: '#4A90E2' }}>Find Your Style</span>
-                        <h2 className="text-4xl font-black mt-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Who's Traveling?</h2>
-                    </div>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                        {TRAVEL_STYLES.map((style, i) => (
-                            <motion.button key={style.id}
-                                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }} transition={{ delay: i * 0.04 }}
-                                whileHover={{ y: -4, scale: 1.04 }} whileTap={{ scale: 0.96 }}
-                                onClick={() => { handleStyleSelect(style.id); scrollToPlanner() }}
-                                className="card flex flex-col items-center gap-2 p-4 cursor-pointer transition-all"
+                        {/* CTA Buttons */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.4 }}
+                            style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                            <button
+                                onClick={() => setPlannerOpen(true)}
+                                className="btn btn-primary btn-lg"
+                                style={{ gap: '10px' }}>
+                                <Sparkles size={18} /> Start planning
+                            </button>
+                            <button
+                                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
                                 style={{
-                                    background: formData.travelerType === style.id
-                                        ? 'linear-gradient(135deg, rgba(74,144,226,0.2), rgba(80,201,206,0.2))'
-                                        : 'var(--card-surface)',
-                                    borderColor: formData.travelerType === style.id ? '#4A90E2' : 'var(--border-color)',
-                                    borderWidth: formData.travelerType === style.id ? '2px' : '1px',
+                                    display: 'inline-flex', alignItems: 'center', gap: '10px',
+                                    padding: '14px 28px', borderRadius: '100px',
+                                    background: 'rgba(0,0,0,0.06)',
+                                    border: '2px solid rgba(0,0,0,0.15)',
+                                    fontFamily: 'Syne, sans-serif', fontWeight: 700,
+                                    fontSize: '16px', cursor: 'pointer',
+                                    color: 'var(--text-primary)',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.1)' }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.06)' }}>
+                                <div style={{
+                                    width: 32, height: 32, borderRadius: '50%',
+                                    background: 'var(--text-primary)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 }}>
-                                <span className="text-3xl">{style.icon}</span>
-                                <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{style.name}</span>
-                                <span className="text-xs text-center hidden sm:block" style={{ color: 'var(--text-secondary)' }}>{style.desc}</span>
-                            </motion.button>
-                        ))}
+                                    <Play size={12} fill="var(--bg-primary)" color="var(--bg-primary)" />
+                                </div>
+                                How it works
+                            </button>
+                        </motion.div>
+
+                        {/* Stats row */}
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                            transition={{ delay: 0.8 }}
+                            style={{
+                                display: 'flex', gap: '32px', marginTop: '52px',
+                                flexWrap: 'wrap',
+                            }}>
+                            {[
+                                { n: '50K+', l: 'Trips Planned' },
+                                { n: '200+', l: 'Destinations' },
+                                { n: '98%', l: 'Happy Travelers' },
+                            ].map(s => (
+                                <div key={s.l}>
+                                    <div style={{ fontSize: 'clamp(22px,3vw,30px)', fontWeight: 800, fontFamily: 'Syne,sans-serif', color: 'var(--text-primary)' }}>
+                                        <Counter value={s.n} />
+                                    </div>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>{s.l}</div>
+                                </div>
+                            ))}
+                        </motion.div>
                     </div>
+                </div>
+
+                {/* Scroll hint */}
+                <motion.div
+                    animate={{ y: [0, 8, 0] }} transition={{ repeat: Infinity, duration: 2 }}
+                    style={{
+                        position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                        fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)',
+                        cursor: 'pointer', zIndex: 2,
+                    }}
+                    onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>
+                    Learn more <ChevronDown size={16} />
                 </motion.div>
             </section>
 
-            {/* ── AI PLANNER FORM ── */}
-            <section id="planner" className="py-16" style={{ background: 'var(--bg-secondary)' }}>
-                <div className="container">
-                    <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-                        <div className="text-center mb-10">
-                            <span className="text-sm font-semibold uppercase tracking-widest" style={{ color: '#4A90E2' }}>AI Planner</span>
-                            <h2 className="text-4xl font-black mt-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
-                                Build Your Perfect Trip
-                            </h2>
-                            <p style={{ color: 'var(--text-secondary)' }}>Powered by Google Gemini — your personal AI travel companion RAHI</p>
-                        </div>
-
-                        <div className="max-w-3xl mx-auto">
-                            <div className="card" style={{ background: 'var(--card-surface)', border: '1px solid var(--border-color)' }}>
-                                {/* Gradient header bar */}
-                                <div className="h-1.5 rounded-t-2xl mb-6 -mx-6 -mt-6"
-                                    style={{ background: 'linear-gradient(90deg, #4A90E2, #50C9CE, #FFD93D)' }} />
-
-                                <form onSubmit={handleSubmit} className="space-y-5">
-                                    <div className="grid md:grid-cols-2 gap-5">
-                                        <div className="space-y-1 md:col-span-2">
-                                            <label className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                                                <MapPin size={14} className="inline mr-1" style={{ color: '#4A90E2' }} />
-                                                Destination
-                                            </label>
-                                            <input name="destination" value={formData.destination} onChange={handleChange}
-                                                placeholder="e.g. Goa, Manali, Rajasthan…" required />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                                                <Calendar size={14} className="inline mr-1" style={{ color: '#4A90E2' }} />
-                                                Duration (days)
-                                            </label>
-                                            <input type="number" name="days" min="1" max="30" value={formData.days} onChange={handleChange} required />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                                                <Wallet size={14} className="inline mr-1" style={{ color: '#4A90E2' }} />
-                                                Budget (₹)
-                                            </label>
-                                            <input type="number" name="budget" placeholder="e.g. 30000" value={formData.budget} onChange={handleChange} required />
-                                        </div>
-                                        <div className="space-y-1 md:col-span-2">
-                                            <label className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Travel Style</label>
-                                            <select name="travelerType" value={formData.travelerType} onChange={handleChange}>
-                                                {TRAVEL_STYLES.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="space-y-1 md:col-span-2">
-                                            <label className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Preferences (optional)</label>
-                                            <textarea name="preferences" rows="2"
-                                                placeholder="e.g. Vegetarian food, avoid crowded places, beach resorts…"
-                                                value={formData.preferences} onChange={handleChange} style={{ resize: 'none' }} />
-                                        </div>
-                                    </div>
-
-                                    {error && (
-                                        <div className="rounded-xl p-4 text-sm" style={{ background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.3)', color: '#FF6B6B' }}>
-                                            {error}
-                                        </div>
-                                    )}
-
-                                    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
-                                        type="submit" disabled={loading} className="btn btn-primary btn-lg btn-block">
-                                        {loading ? (
-                                            <><div className="spinner-sm" /> Generating your perfect journey…</>
-                                        ) : (
-                                            <><Sparkles size={18} /> Generate AI Itinerary with RAHI</>
-                                        )}
-                                    </motion.button>
-                                </form>
+            {/* ── AI PLANNER MODAL ─────────────────────────────────────────── */}
+            <AnimatePresence>
+                {plannerOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setPlannerOpen(false)}
+                            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, backdropFilter: 'blur(6px)' }}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 30 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 30 }}
+                            transition={{ duration: 0.3 }}
+                            style={{
+                                position: 'fixed', top: '50%', left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                width: '90vw', maxWidth: '540px',
+                                background: '#fff',
+                                borderRadius: '28px',
+                                padding: '36px',
+                                zIndex: 101,
+                                boxShadow: '0 32px 80px rgba(0,0,0,0.25)',
+                            }}>
+                            {/* Header */}
+                            <div style={{ marginBottom: '28px' }}>
+                                <div style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                                    background: '#F5C518', borderRadius: '100px',
+                                    padding: '6px 14px', marginBottom: '12px',
+                                    fontSize: '12px', fontWeight: 700, color: '#0A0A0A',
+                                }}>
+                                    <Sparkles size={12} /> AI TRIP PLANNER
+                                </div>
+                                <h2 style={{ fontSize: '26px', fontWeight: 800, color: '#0A0A0A', fontFamily: 'Syne, sans-serif' }}>
+                                    Build Your Perfect Trip
+                                </h2>
+                                <p style={{ color: '#666', fontSize: '14px', marginTop: '6px' }}>Fill in your details and let Gemini AI craft your itinerary</p>
                             </div>
+
+                            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                {/* Destination */}
+                                <div>
+                                    <label style={{ fontSize: '13px', fontWeight: 600, color: '#0A0A0A', display: 'block', marginBottom: '6px' }}>
+                                        📍 Destination
+                                    </label>
+                                    <input
+                                        name="destination" value={formData.destination}
+                                        onChange={handleChange}
+                                        placeholder="e.g. Goa, Manali, Paris..."
+                                        style={{ background: '#F8F9FA', borderColor: '#E0E0E0', color: '#0A0A0A' }}
+                                    />
+                                </div>
+
+                                {/* Days + Budget */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                    <div>
+                                        <label style={{ fontSize: '13px', fontWeight: 600, color: '#0A0A0A', display: 'block', marginBottom: '6px' }}>
+                                            <Calendar size={12} style={{ display: 'inline', marginRight: 4 }} />Duration (days)
+                                        </label>
+                                        <input
+                                            type="number" name="days" min="1" max="14"
+                                            value={formData.days} onChange={handleChange}
+                                            style={{ background: '#F8F9FA', borderColor: '#E0E0E0', color: '#0A0A0A' }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '13px', fontWeight: 600, color: '#0A0A0A', display: 'block', marginBottom: '6px' }}>
+                                            <Wallet size={12} style={{ display: 'inline', marginRight: 4 }} />Budget (₹)
+                                        </label>
+                                        <input
+                                            type="number" name="budget" min="1000"
+                                            value={formData.budget} onChange={handleChange}
+                                            style={{ background: '#F8F9FA', borderColor: '#E0E0E0', color: '#0A0A0A' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Travel Style */}
+                                <div>
+                                    <label style={{ fontSize: '13px', fontWeight: 600, color: '#0A0A0A', display: 'block', marginBottom: '8px' }}>
+                                        Travel Style
+                                    </label>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                        {TRAVEL_STYLES.map(s => (
+                                            <button
+                                                key={s.id} type="button"
+                                                onClick={() => handleStyleSelect(s.id)}
+                                                style={{
+                                                    padding: '6px 14px', borderRadius: '100px', border: '2px solid',
+                                                    borderColor: formData.travelerType === s.id ? '#0A0A0A' : '#E0E0E0',
+                                                    background: formData.travelerType === s.id ? '#0A0A0A' : 'transparent',
+                                                    color: formData.travelerType === s.id ? '#fff' : '#0A0A0A',
+                                                    fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                                                    transition: 'all 0.2s ease',
+                                                }}>
+                                                {s.icon} {s.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Preferences */}
+                                <div>
+                                    <label style={{ fontSize: '13px', fontWeight: 600, color: '#0A0A0A', display: 'block', marginBottom: '6px' }}>
+                                        Preferences (optional)
+                                    </label>
+                                    <textarea
+                                        name="preferences" rows={2}
+                                        value={formData.preferences} onChange={handleChange}
+                                        placeholder="e.g. Vegetarian food, beach resorts, avoid crowds..."
+                                        style={{ resize: 'none', background: '#F8F9FA', borderColor: '#E0E0E0', color: '#0A0A0A' }}
+                                    />
+                                </div>
+
+                                {error && (
+                                    <div style={{
+                                        background: '#FFF0F0', border: '1px solid #FFD0D0',
+                                        borderRadius: '10px', padding: '12px 16px',
+                                        color: '#C0392B', fontSize: '14px',
+                                    }}>{error}</div>
+                                )}
+
+                                <button
+                                    type="submit" disabled={loading}
+                                    style={{
+                                        background: '#F5C518', color: '#0A0A0A',
+                                        border: 'none', borderRadius: '100px',
+                                        padding: '16px', fontFamily: 'Syne, sans-serif',
+                                        fontWeight: 800, fontSize: '16px',
+                                        cursor: loading ? 'not-allowed' : 'pointer',
+                                        opacity: loading ? 0.7 : 1,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                                        transition: 'all 0.2s',
+                                        boxShadow: '0 4px 20px rgba(245,197,24,0.5)',
+                                    }}
+                                    onMouseEnter={e => !loading && (e.currentTarget.style.transform = 'translateY(-2px)')}
+                                    onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}>
+                                    {loading ? (
+                                        <><span className="spinner-sm" style={{ borderTopColor: '#0A0A0A', borderColor: 'rgba(0,0,0,0.2)' }} /> Generating with AI...</>
+                                    ) : (
+                                        <><Sparkles size={18} /> Generate AI Itinerary</>
+                                    )}
+                                </button>
+                            </form>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
+            {/* ── HOW IT WORKS ─────────────────────────────────────────────── */}
+            <section id="how-it-works" style={{
+                background: '#0A0A0A',
+                padding: 'clamp(60px, 10vw, 120px) 5vw',
+            }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+                        <div style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '8px',
+                            background: 'rgba(245,197,24,0.12)', borderRadius: '100px',
+                            padding: '6px 16px', marginBottom: '20px',
+                            fontSize: '13px', fontWeight: 600, color: '#F5C518',
+                        }}>
+                            <Zap size={13} /> HOW IT WORKS
                         </div>
+                        <h2 style={{
+                            fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800,
+                            color: '#FFFFFF', fontFamily: 'Syne, sans-serif',
+                            letterSpacing: '-1px', marginBottom: '16px',
+                        }}>
+                            Plan smarter, travel better.
+                        </h2>
+                        <p style={{ color: '#888', fontSize: '18px', maxWidth: '520px', margin: '0 auto' }}>
+                            Three steps between you and your perfect itinerary.
+                        </p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+                        {[
+                            { n: '01', icon: <Search size={28} />, title: 'Enter your destination', desc: 'Tell us where you want to go, how long, and your travel style.' },
+                            { n: '02', icon: <Sparkles size={28} />, title: 'AI builds your plan', desc: 'Google Gemini creates a detailed day-by-day itinerary tailored to your budget.' },
+                            { n: '03', icon: <Plane size={28} />, title: 'Explore & go!', desc: 'Get weather, maps, safety tips, and export your plan as PDF.' },
+                        ].map((step, i) => (
+                            <motion.div
+                                key={step.n}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.15 }}
+                                style={{
+                                    background: '#141414',
+                                    borderRadius: '20px',
+                                    padding: '36px 32px',
+                                    border: '1px solid rgba(255,255,255,0.06)',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                }}>
+                                <div style={{
+                                    position: 'absolute', top: '20px', right: '24px',
+                                    fontSize: '72px', fontWeight: 800,
+                                    color: 'rgba(245,197,24,0.06)',
+                                    fontFamily: 'Syne, sans-serif',
+                                    lineHeight: 1,
+                                }}>{step.n}</div>
+                                <div style={{
+                                    width: '56px', height: '56px', borderRadius: '16px',
+                                    background: 'rgba(245,197,24,0.12)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: '#F5C518', marginBottom: '20px',
+                                }}>
+                                    {step.icon}
+                                </div>
+                                <h3 style={{ color: '#fff', fontSize: '20px', fontWeight: 700, marginBottom: '10px', fontFamily: 'Syne, sans-serif' }}>
+                                    {step.title}
+                                </h3>
+                                <p style={{ color: '#666', lineHeight: 1.7, fontSize: '15px' }}>{step.desc}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* Big CTA */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        style={{ textAlign: 'center', marginTop: '64px' }}>
+                        <button
+                            onClick={() => { setPlannerOpen(true); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                            style={{
+                                background: '#F5C518', color: '#0A0A0A',
+                                border: 'none', borderRadius: '100px',
+                                padding: '18px 48px', fontFamily: 'Syne, sans-serif',
+                                fontWeight: 800, fontSize: '18px', cursor: 'pointer',
+                                display: 'inline-flex', alignItems: 'center', gap: '10px',
+                                boxShadow: '0 8px 32px rgba(245,197,24,0.4)',
+                                transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 16px 48px rgba(245,197,24,0.55)' }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(245,197,24,0.4)' }}>
+                            Start planning for free <ArrowRight size={20} />
+                        </button>
                     </motion.div>
                 </div>
             </section>
 
-            {/* ── POPULAR DESTINATIONS ── */}
-            <section className="py-20 container">
-                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                    <div className="text-center mb-12">
-                        <span className="text-sm font-semibold uppercase tracking-widest" style={{ color: '#4A90E2' }}>Explore</span>
-                        <h2 className="text-4xl font-black mt-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Popular Destinations</h2>
+            {/* ── FEATURES ─────────────────────────────────────────────────── */}
+            <section style={{
+                background: '#F5C518',
+                padding: 'clamp(60px, 10vw, 120px) 5vw',
+            }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    <div style={{ marginBottom: '56px' }}>
+                        <h2 style={{
+                            fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800,
+                            color: '#0A0A0A', fontFamily: 'Syne, sans-serif',
+                            letterSpacing: '-1px', lineHeight: 1.0,
+                        }}>
+                            Everything you need<br />
+                            <span style={{ color: 'rgba(0,0,0,0.35)' }}>to travel smart.</span>
+                        </h2>
                     </div>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {DESTINATIONS.map((dest, i) => (
-                            <motion.div key={dest.name}
-                                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                                whileHover={{ y: -8 }} className="relative overflow-hidden rounded-2xl cursor-pointer group"
-                                onClick={() => { setFormData(p => ({ ...p, destination: dest.name })); scrollToPlanner() }}>
-                                <div className="h-64 overflow-hidden">
-                                    <img src={dest.img} alt={dest.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+                        {FEATURES.map((f, i) => (
+                            <motion.div
+                                key={f.title}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.08 }}
+                                whileHover={{ y: -4 }}
+                                style={{
+                                    background: 'rgba(0,0,0,0.06)',
+                                    borderRadius: '20px',
+                                    padding: '28px 24px',
+                                    border: '1px solid rgba(0,0,0,0.08)',
+                                    transition: 'all 0.25s ease',
+                                }}>
+                                <div style={{
+                                    width: '48px', height: '48px', borderRadius: '14px',
+                                    background: '#0A0A0A',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: '#F5C518', marginBottom: '16px',
+                                }}>
+                                    {f.icon}
                                 </div>
-                                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 60%)' }} />
-                                <div className="absolute bottom-0 left-0 right-0 p-5">
-                                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full mb-2 inline-block"
-                                        style={{ background: 'rgba(74,144,226,0.9)', color: '#fff' }}>{dest.tag}</span>
-                                    <h3 className="text-xl font-bold text-white">{dest.name}</h3>
-                                    <div className="flex items-center gap-1 mt-1">
-                                        <Star size={12} fill="#FFD93D" color="#FFD93D" />
-                                        <span className="text-sm" style={{ color: '#FFD93D' }}>{dest.rating}</span>
-                                    </div>
-                                </div>
-                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all">
-                                    <div className="btn btn-sm btn-primary">
-                                        Plan Trip <ArrowRight size={14} />
-                                    </div>
-                                </div>
+                                <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0A0A0A', marginBottom: '8px', fontFamily: 'Syne, sans-serif' }}>
+                                    {f.title}
+                                </h3>
+                                <p style={{ color: 'rgba(0,0,0,0.55)', fontSize: '14px', lineHeight: 1.65 }}>{f.desc}</p>
                             </motion.div>
                         ))}
                     </div>
-                    <div className="text-center mt-8">
-                        <Link to="/explore" className="btn btn-outline btn-lg">
-                            View All Destinations <ArrowRight size={16} />
+                </div>
+            </section>
+
+            {/* ── POPULAR DESTINATIONS ─────────────────────────────────────── */}
+            <section style={{
+                background: '#fff',
+                padding: 'clamp(60px, 10vw, 120px) 5vw',
+            }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '40px' }}>
+                        <h2 style={{
+                            fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800,
+                            color: '#0A0A0A', fontFamily: 'Syne, sans-serif',
+                            letterSpacing: '-1px',
+                        }}>
+                            Trending destinations.
+                        </h2>
+                        <Link to="/explore" style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '6px',
+                            fontWeight: 700, color: '#0A0A0A', fontSize: '15px',
+                            borderBottom: '2px solid #F5C518', paddingBottom: '2px',
+                        }}>
+                            View all <ArrowRight size={16} />
                         </Link>
                     </div>
-                </motion.div>
-            </section>
 
-            {/* ── FEATURES ── */}
-            <section className="py-20" style={{ background: 'var(--bg-secondary)' }}>
-                <div className="container">
-                    <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                        <div className="text-center mb-12">
-                            <span className="text-sm font-semibold uppercase tracking-widest" style={{ color: '#4A90E2' }}>Why TRAVLO</span>
-                            <h2 className="text-4xl font-black mt-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Everything You Need</h2>
-                        </div>
-                        <div className="grid md:grid-cols-3 gap-6">
-                            {FEATURES.map((feat, i) => (
-                                <motion.div key={feat.title}
-                                    initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                                    whileHover={{ y: -6 }} className="card p-6">
-                                    <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                                        style={{ background: 'linear-gradient(135deg, rgba(74,144,226,0.2), rgba(80,201,206,0.15))', color: '#4A90E2' }}>
-                                        {feat.icon}
-                                    </div>
-                                    <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{feat.title}</h3>
-                                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{feat.desc}</p>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
-
-            {/* ── STATS ── */}
-            <section className="py-20" style={{ background: 'linear-gradient(135deg, #0F1928, #1E2D3D)' }}>
-                <div className="container">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                        {STATS.map((stat, i) => (
-                            <motion.div key={stat.label}
-                                initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }}
-                                viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
-                                <div className="text-5xl font-black mb-2 gradient-text">{stat.num}</div>
-                                <div className="text-sm" style={{ color: '#A0AEC0' }}>{stat.label}</div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ── TESTIMONIALS ── */}
-            <section className="py-20 container">
-                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-                    <div className="text-center mb-12">
-                        <span className="text-sm font-semibold uppercase tracking-widest" style={{ color: '#4A90E2' }}>Reviews</span>
-                        <h2 className="text-4xl font-black mt-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Travelers Love TRAVLO</h2>
-                    </div>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {TESTIMONIALS.map((t, i) => (
-                            <motion.div key={t.name}
-                                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }} transition={{ delay: i * 0.12 }}
-                                className="card p-6">
-                                <div className="flex mb-3">
-                                    {[...Array(t.rating)].map((_, j) => <Star key={j} size={16} fill="#FFD93D" color="#FFD93D" />)}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+                        {DESTINATIONS.map((d, i) => (
+                            <motion.div
+                                key={d.name}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                onClick={() => { setFormData(p => ({ ...p, destination: d.name })); setPlannerOpen(true) }}
+                                style={{
+                                    borderRadius: '20px', overflow: 'hidden',
+                                    cursor: 'pointer', position: 'relative',
+                                    aspectRatio: '4/5',
+                                    boxShadow: '0 4px 24px rgba(0,0,0,0.1)',
+                                    transition: 'all 0.3s ease',
+                                }}
+                                whileHover={{ scale: 1.02, boxShadow: '0 16px 48px rgba(0,0,0,0.2)' }}>
+                                <img src={d.img} alt={d.name}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <div style={{
+                                    position: 'absolute', inset: 0,
+                                    background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%)',
+                                }} />
+                                <div style={{ position: 'absolute', bottom: '20px', left: '20px' }}>
+                                    <div style={{
+                                        display: 'inline-block',
+                                        background: '#F5C518', color: '#0A0A0A',
+                                        borderRadius: '100px', padding: '3px 12px',
+                                        fontSize: '11px', fontWeight: 700, marginBottom: '8px',
+                                    }}>{d.tag}</div>
+                                    <div style={{ color: '#fff', fontSize: '20px', fontWeight: 800, fontFamily: 'Syne, sans-serif' }}>{d.name}</div>
+                                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px' }}>{d.country}</div>
                                 </div>
-                                <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-secondary)' }}>"{t.text}"</p>
-                                <div className="flex items-center gap-3 pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
-                                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white"
-                                        style={{ background: 'linear-gradient(135deg, #4A90E2, #50C9CE)' }}>
-                                        {t.name[0]}
-                                    </div>
-                                    <div>
-                                        <div className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{t.name}</div>
-                                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{t.role}</div>
-                                    </div>
+                                <div style={{
+                                    position: 'absolute', top: '16px', right: '16px',
+                                    background: 'rgba(255,255,255,0.95)', borderRadius: '100px',
+                                    padding: '4px 10px', fontSize: '13px', fontWeight: 700, color: '#0A0A0A',
+                                    display: 'flex', alignItems: 'center', gap: '4px',
+                                }}>
+                                    <Star size={12} fill="#F5C518" color="#F5C518" /> {d.rating}
                                 </div>
                             </motion.div>
                         ))}
                     </div>
+                </div>
+            </section>
+
+            {/* ── FINAL CTA ─────────────────────────────────────────────────── */}
+            <section style={{
+                background: '#0A0A0A',
+                padding: 'clamp(80px, 12vw, 140px) 5vw',
+                textAlign: 'center',
+            }}>
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}>
+                    <h2 style={{
+                        fontSize: 'clamp(36px, 6vw, 72px)', fontWeight: 800,
+                        color: '#fff', fontFamily: 'Syne, sans-serif',
+                        letterSpacing: '-2px', marginBottom: '20px',
+                    }}>
+                        Ready to travel<br />
+                        <span style={{ color: '#F5C518' }}>differently?</span>
+                    </h2>
+                    <p style={{ color: '#666', fontSize: '18px', marginBottom: '40px', maxWidth: '440px', margin: '0 auto 40px' }}>
+                        No signup required. Just enter your destination and let AI do the rest.
+                    </p>
+                    <button
+                        onClick={() => { setPlannerOpen(true); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                        style={{
+                            background: '#F5C518', color: '#0A0A0A',
+                            border: 'none', borderRadius: '100px',
+                            padding: '20px 56px', fontFamily: 'Syne, sans-serif',
+                            fontWeight: 800, fontSize: '20px', cursor: 'pointer',
+                            display: 'inline-flex', alignItems: 'center', gap: '12px',
+                            boxShadow: '0 12px 48px rgba(245,197,24,0.45)',
+                            transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 20px 60px rgba(245,197,24,0.6)' }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 12px 48px rgba(245,197,24,0.45)' }}>
+                        <Sparkles size={22} /> Plan my trip now
+                    </button>
                 </motion.div>
             </section>
 
-            {/* ── CTA ── */}
-            <section className="py-24" style={{ background: 'linear-gradient(135deg, #0F1928, #1E2D3D)' }}>
-                <div className="container text-center">
-                    <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}>
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 glass text-sm"
-                            style={{ color: '#50C9CE', border: '1px solid rgba(80,201,206,0.3)' }}>
-                            <Globe size={14} /> Start your journey today
-                        </div>
-                        <h2 className="text-5xl font-black mb-4 text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                            Your Dream Trip <span className="gradient-text">Awaits</span>
-                        </h2>
-                        <p className="text-lg mb-8 mx-auto max-w-xl" style={{ color: '#A0AEC0' }}>
-                            Let RAHI, your AI travel companion, design the perfect itinerary for you. Free. Instant. Unforgettable.
-                        </p>
-                        <div className="flex flex-wrap gap-4 justify-center">
-                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-                                onClick={isAuthenticated ? scrollToPlanner : () => navigate('/signup')}
-                                className="btn btn-primary btn-lg">
-                                {isAuthenticated ? <><Sparkles size={18} /> Plan My Trip Now</> : <><ArrowRight size={18} /> Get Started — It's Free</>}
-                            </motion.button>
-                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-                                onClick={() => navigate('/explore')} className="btn btn-outline btn-lg"
-                                style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.2)' }}>
-                                <Compass size={18} /> Explore Destinations
-                            </motion.button>
-                        </div>
-                    </motion.div>
+            {/* ── FOOTER ───────────────────────────────────────────────────── */}
+            <footer style={{
+                background: '#0A0A0A',
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                padding: '32px 5vw',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                flexWrap: 'wrap', gap: '16px',
+            }}>
+                <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: '20px', color: '#F5C518' }}>
+                    TRAVLO <span style={{ fontSize: '11px', fontWeight: 600, color: '#555', marginLeft: '4px' }}>AI</span>
                 </div>
-            </section>
-
-            {/* ── FOOTER ── */}
-            <footer style={{ background: '#080E1B', borderTop: '1px solid rgba(74,144,226,0.15)' }}>
-                <div className="container py-12">
-                    <div className="grid md:grid-cols-4 gap-8 mb-8">
-                        <div>
-                            <div className="text-2xl font-black mb-3 gradient-text" style={{ fontFamily: 'Outfit, sans-serif' }}>TRAVLO</div>
-                            <p className="text-sm" style={{ color: '#A0AEC0' }}>AI-powered travel planning for every type of traveler.</p>
-                        </div>
-                        {[
-                            { title: 'Product', links: ['AI Planner', 'Explore', 'Maps', 'RAHI Chat'] },
-                            { title: 'Features', links: ['Budget Planner', 'Weather', 'My Trips', 'Currency'] },
-                            { title: 'Company', links: ['About', 'Privacy Policy', 'Terms', 'Contact'] },
-                        ].map(col => (
-                            <div key={col.title}>
-                                <div className="font-semibold mb-3 text-sm" style={{ color: '#fff' }}>{col.title}</div>
-                                <ul className="space-y-2">
-                                    {col.links.map(link => (
-                                        <li key={link}><a href="#" className="text-sm transition-colors hover:text-blue-400" style={{ color: '#A0AEC0' }}>{link}</a></li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex flex-col md:flex-row justify-between items-center pt-8 gap-4"
-                        style={{ borderTop: '1px solid rgba(74,144,226,0.1)' }}>
-                        <p className="text-sm" style={{ color: '#A0AEC0' }}>© 2024 TRAVLO AI. All rights reserved.</p>
-                        <p className="text-sm flex items-center gap-1" style={{ color: '#A0AEC0' }}>
-                            Made with <Heart size={14} fill="#FF6B6B" color="#FF6B6B" /> for travelers everywhere
-                        </p>
-                    </div>
+                <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+                    {[['/', 'Home'], ['/explore', 'Explore'], ['/map', 'Map'], ['/budget', 'Budget'], ['/login', 'Login']].map(([to, label]) => (
+                        <Link key={to} to={to} style={{ color: '#555', fontSize: '14px', fontWeight: 500, transition: 'color 0.2s' }}
+                            onMouseEnter={e => e.currentTarget.style.color = '#F5C518'}
+                            onMouseLeave={e => e.currentTarget.style.color = '#555'}>
+                            {label}
+                        </Link>
+                    ))}
                 </div>
+                <div style={{ color: '#333', fontSize: '13px' }}>© 2026 TRAVLO. All rights reserved.</div>
             </footer>
         </div>
     )
