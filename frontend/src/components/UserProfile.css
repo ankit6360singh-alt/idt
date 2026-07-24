@@ -1,0 +1,123 @@
+.user-profile-dropdown {
+    position: relative;
+    z-index: 1000;
+}
+
+.profile-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 30px;
+    cursor: pointer;
+    color: var(--pure-white);
+    transition: all var(--transition-fast);
+}
+
+.profile-trigger:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    background: var(--accent-sunset);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.user-name {
+    font-weight: 500;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.arrow {
+    font-size: 0.7rem;
+    transition: transform 0.3s ease;
+}
+
+.arrow.up {
+    transform: rotate(180deg);
+}
+
+.profile-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 240px;
+    background: var(--pure-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xl);
+    padding: var(--spacing-sm) 0;
+    animation: slideDown 0.3s ease-out;
+}
+
+.menu-header {
+    padding: var(--spacing-md);
+}
+
+.menu-header strong {
+    display: block;
+    color: var(--dark-navy);
+    font-size: 1rem;
+}
+
+.menu-header span {
+    color: var(--text-light);
+    font-size: 0.85rem;
+}
+
+.menu-divider {
+    height: 1px;
+    background: var(--soft-gray);
+    margin: var(--spacing-xs) 0;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 12px var(--spacing-md);
+    color: var(--text-dark);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.menu-item:hover {
+    background: var(--soft-gray);
+    color: var(--primary-blue);
+}
+
+.menu-item.logout {
+    color: #FF6B6B;
+}
+
+.menu-item.logout:hover {
+    background: #FFF5F5;
+}
+
+.auth-nav {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+    .user-name {
+        display: none;
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "name": "travlo-backend",
+    "version": "1.0.0",
+    "description": "TRAVLO AI Travel Platform Backend",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node --watch server.js"
+    },
+    "keywords": [
+        "travel",
+        "ai",
+        "backend"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "@google/generative-ai": "^0.24.1",
+        "@googlemaps/google-maps-services-js": "^3.4.2",
+        "axios": "^1.7.9",
+        "bcryptjs": "^3.0.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2",
+        "express-rate-limit": "^7.5.0",
+        "express-validator": "^7.3.1",
+        "jsonwebtoken": "^9.0.3",
+        "mongoose": "^8.9.3",
+        "passport": "^0.7.0",
+        "passport-google-oauth20": "^2.0.0"
+    }
+}

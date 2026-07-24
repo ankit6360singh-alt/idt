@@ -1,0 +1,162 @@
+.emergency-button {
+    position: fixed;
+    bottom: 120px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
+    border: none;
+    font-size: 1.75rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: all var(--transition-base);
+    z-index: 997;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+}
+
+.emergency-button:hover {
+    transform: scale(1.15);
+    box-shadow: var(--shadow-xl);
+}
+
+.emergency-panel {
+    position: fixed;
+    bottom: 190px;
+    right: 30px;
+    width: 350px;
+    max-height: 500px;
+    background: var(--pure-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: 996;
+    animation: slideUp 0.3s ease-out;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.emergency-header {
+    background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%);
+    color: var(--pure-white);
+    padding: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.emergency-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--pure-white);
+}
+
+.close-emergency {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: var(--pure-white);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.close-emergency:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.emergency-list {
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.emergency-contact {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--soft-gray);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--text-dark);
+    transition: all var(--transition-fast);
+}
+
+.emergency-contact:hover {
+    background: #FFE5E5;
+    transform: translateX(4px);
+}
+
+.contact-icon {
+    font-size: 2rem;
+}
+
+.contact-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-info strong {
+    color: var(--dark-navy);
+    font-size: 1rem;
+}
+
+.contact-number {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.call-icon {
+    font-size: 1.5rem;
+}
+
+.emergency-tips {
+    padding: var(--spacing-md);
+    background: var(--soft-gray);
+    border-top: 1px solid #E0E7FF;
+}
+
+.emergency-tips h4 {
+    margin: 0 0 var(--spacing-sm) 0;
+    color: var(--dark-navy);
+    font-size: 1rem;
+}
+
+.emergency-tips ul {
+    margin: 0;
+    padding-left: var(--spacing-lg);
+}
+
+.emergency-tips li {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin-bottom: var(--spacing-xs);
+    line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .emergency-button {
+        bottom: 100px;
+        right: 20px;
+    }
+
+    .emergency-panel {
+        width: calc(100vw - 40px);
+        right: 20px;
+        bottom: 170px;
+    }
+}
